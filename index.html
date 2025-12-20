@@ -4,435 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>투자지도 PRO</title>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7e60f6a42602355b925c66ea6db3bd87&libraries=services,clusterer"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7e60f6a42602355b925c66ea6db3bd87&libraries=clusterer"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; overflow: hidden; }
+        #map { width: 100%; height: 100vh; }
         
-        body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            overflow: hidden;
-        }
-        
-        #map {
-            width: 100%;
-            height: 100vh;
-        }
-        
-        /* 사이드바 */
         .sidebar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 360px;
-            height: 100vh;
-            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            box-shadow: 4px 0 30px rgba(0,0,0,0.08);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
+            position: absolute; top: 0; left: 0; width: 360px; height: 100vh;
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+            backdrop-filter: blur(20px); box-shadow: 4px 0 30px rgba(0,0,0,0.08);
+            z-index: 1000; display: flex; flex-direction: column;
         }
         
-        .sidebar.collapsed {
-            transform: translateX(-320px);
-        }
-        
-        /* 헤더 */
-        .header {
-            padding: 30px 25px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-        
+        .header { padding: 30px 25px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .header h1 {
-            font-size: 28px;
-            font-weight: 700;
+            font-size: 28px; font-weight: 700;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 8px;
         }
+        .header p { font-size: 13px; color: #666; }
         
-        .header p {
-            font-size: 13px;
-            color: #666;
-        }
-        
-        /* 검색바 */
-        .search-container {
-            padding: 20px 25px;
-        }
-        
-        .search-box {
-            position: relative;
-        }
-        
-        .search-box input {
-            width: 100%;
-            padding: 14px 45px 14px 18px;
-            border: 2px solid #e8e8e8;
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.3s;
-            outline: none;
-        }
-        
-        .search-box input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-        }
-        
-        .search-box::after {
-            content: '🔍';
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-        }
-        
-        /* 통계 카드 */
         .stats-grid {
-            padding: 0 25px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
+            padding: 20px 25px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
         }
         
         .stat-card {
-            background: white;
-            padding: 18px;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            transition: all 0.3s;
-            cursor: pointer;
+            background: white; padding: 18px; border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: all 0.3s;
         }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .stat-card.auction { border-left: 4px solid #667eea; }
+        .stat-card.public { border-left: 4px solid #9b59b6; }
+        .stat-card.land { border-left: 4px solid #2ecc71; }
+        .stat-card.polygon { border-left: 4px solid #e74c3c; }
         
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-        }
+        .stat-card .label { font-size: 12px; color: #999; margin-bottom: 6px; font-weight: 500; }
+        .stat-card .value { font-size: 26px; font-weight: 700; color: #333; }
         
-        .stat-card.auction {
-            border-left: 4px solid #667eea;
-        }
-        
-        .stat-card.public {
-            border-left: 4px solid #9b59b6;
-        }
-        
-        .stat-card.land {
-            border-left: 4px solid #2ecc71;
-        }
-        
-        .stat-card.polygon {
-            border-left: 4px solid #e74c3c;
-        }
-        
-        .stat-card .label {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
-        
-        .stat-card .value {
-            font-size: 26px;
-            font-weight: 700;
-            color: #333;
-        }
-        
-        .stat-card .change {
-            font-size: 11px;
-            color: #2ecc71;
-            margin-top: 4px;
-        }
-        
-        /* 필터 섹션 */
-        .filter-section {
-            padding: 0 25px;
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        .filter-section h3 {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 15px;
-        }
+        .filter-section { padding: 0 25px; }
+        .filter-section h3 { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 15px; }
         
         .filter-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px;
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; background: white; border-radius: 12px;
+            margin-bottom: 10px; cursor: pointer; transition: all 0.2s;
         }
-        
-        .filter-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .filter-item-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .filter-item:hover { background: #f8f9fa; }
+        .filter-item-left { display: flex; align-items: center; gap: 12px; }
         
         .filter-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
         }
-        
         .filter-icon.auction { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .filter-icon.public { background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); }
         .filter-icon.land { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
         
-        .filter-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #333;
-        }
+        .filter-label { font-size: 14px; font-weight: 500; color: #333; }
         
-        /* 토글 스위치 */
         .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            background: #e0e0e0;
-            border-radius: 13px;
-            transition: background 0.3s;
+            position: relative; width: 48px; height: 26px;
+            background: #e0e0e0; border-radius: 13px; transition: background 0.3s;
         }
-        
-        .toggle-switch.active {
-            background: #667eea;
-        }
-        
+        .toggle-switch.active { background: #667eea; }
         .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            content: ''; position: absolute; top: 3px; left: 3px;
+            width: 20px; height: 20px; background: white; border-radius: 50%;
+            transition: transform 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
+        .toggle-switch.active::after { transform: translateX(22px); }
         
-        .toggle-switch.active::after {
-            transform: translateX(22px);
-        }
-        
-        /* 토글 버튼 */
-        .sidebar-toggle {
-            position: absolute;
-            right: -40px;
-            top: 20px;
-            width: 40px;
-            height: 40px;
-            background: white;
-            border: none;
-            border-radius: 0 8px 8px 0;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-toggle:hover {
-            background: #f8f9fa;
-        }
-        
-        /* 로딩 */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px 50px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loading-text {
-            font-size: 15px;
-            color: #666;
-            font-weight: 500;
-        }
-        
-        /* 인포윈도우 */
-        .info-window {
-            padding: 16px;
-            min-width: 280px;
-        }
-        
+        .info-window { padding: 16px; min-width: 280px; }
         .info-window .badge {
-            display: inline-block;
-            padding: 4px 12px;
+            display: inline-block; padding: 4px 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 10px;
+            color: white; border-radius: 20px; font-size: 11px;
+            font-weight: 600; margin-bottom: 10px;
         }
-        
-        .info-window h3 {
-            font-size: 16px;
-            margin-bottom: 12px;
-            color: #333;
-            font-weight: 600;
-        }
-        
+        .info-window h3 { font-size: 16px; margin-bottom: 12px; color: #333; font-weight: 600; }
         .info-window .detail-row {
-            display: flex;
-            align-items: center;
-            margin: 8px 0;
-            font-size: 13px;
-            color: #666;
+            display: flex; align-items: center; margin: 8px 0; font-size: 13px; color: #666;
         }
-        
-        .info-window .detail-row .icon {
-            margin-right: 8px;
-        }
-        
+        .info-window .detail-row .icon { margin-right: 8px; }
         .info-window .price-box {
-            margin-top: 12px;
-            padding: 12px;
+            margin-top: 12px; padding: 12px;
             background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-            border-radius: 10px;
-            border-left: 3px solid #667eea;
+            border-radius: 10px; border-left: 3px solid #667eea;
         }
-        
-        .info-window .price-label {
-            font-size: 11px;
-            color: #999;
-            margin-bottom: 4px;
-        }
-        
-        .info-window .price-value {
-            font-size: 20px;
-            font-weight: 700;
-            color: #667eea;
-        }
-        
+        .info-window .price-label { font-size: 11px; color: #999; margin-bottom: 4px; }
+        .info-window .price-value { font-size: 20px; font-weight: 700; color: #667eea; }
         .info-window .polygon-btn {
-            margin-top: 12px;
-            width: 100%;
-            padding: 10px;
+            margin-top: 12px; width: 100%; padding: 10px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+            color: white; border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;
         }
-        
         .info-window .polygon-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102,126,234,0.3);
-        }
-        
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-            }
-            
-            .sidebar.collapsed {
-                transform: translateX(-100%);
-            }
+            transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.3);
         }
     </style>
 </head>
 <body>
-    <div id="loading" class="loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">지도 불러오는 중...</div>
-    </div>
-    
     <div id="map"></div>
     
-    <div class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
-            <span id="toggle-icon">◀</span>
-        </button>
-        
+    <div class="sidebar">
         <div class="header">
             <h1>투자지도 PRO</h1>
             <p>스마트한 부동산 투자 플랫폼</p>
         </div>
         
-        <div class="search-container">
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="주소 또는 사건번호 검색...">
-            </div>
-        </div>
-        
         <div class="stats-grid">
-            <div class="stat-card auction" onclick="focusCategory('경매')">
+            <div class="stat-card auction">
                 <div class="label">경매</div>
                 <div class="value" id="auction-count">0</div>
-                <div class="change">실시간 업데이트</div>
             </div>
-            <div class="stat-card public" onclick="focusCategory('공매')">
+            <div class="stat-card public">
                 <div class="label">공매</div>
                 <div class="value" id="public-count">0</div>
-                <div class="change">실시간 업데이트</div>
             </div>
             <div class="stat-card land">
                 <div class="label">보상토지</div>
                 <div class="value" id="land-count">0</div>
-                <div class="change">217개 사업지구</div>
             </div>
             <div class="stat-card polygon">
                 <div class="label">폴리곤</div>
                 <div class="value" id="polygon-count">0</div>
-                <div class="change">클릭 시 표시</div>
             </div>
         </div>
         
@@ -466,155 +165,110 @@
     </div>
 
     <script>
-        // API 키
-        const KAKAO_REST_API_KEY = 'e74aac7a956ed963107dcd5e074fba7e';
         const VWORLD_API_KEY = 'D0F229B6-968D-3F5F-B4EB-E509962F466C';
         
-        // 전역 변수
-        let map;
-        let geocoder;
-        let clusterer;
-        let markers = {
-            auction: [],
-            public: [],
-            land: []
-        };
+        let map, clusterer;
+        let markers = { auction: [], public: [], land: [] };
         let polygons = [];
         let currentInfowindow = null;
-        let filterState = {
-            auction: true,
-            public: true,
-            land: true
-        };
+        let filterState = { auction: true, public: true, land: true };
         
         // 지도 초기화
         function initMap() {
             const container = document.getElementById('map');
             const options = {
-                center: new kakao.maps.LatLng(37.2636, 127.0286), // 경기도 중심
+                center: new kakao.maps.LatLng(37.2636, 127.0286),
                 level: 9
             };
             
             map = new kakao.maps.Map(container, options);
-            geocoder = new kakao.maps.services.Geocoder();
             
-            // 마커 클러스터러 초기화 (성능 최적화!)
             clusterer = new kakao.maps.MarkerClusterer({
                 map: map,
                 averageCenter: true,
                 minLevel: 6,
                 disableClickZoom: true,
                 styles: [{
-                    width: '50px',
-                    height: '50px',
+                    width: '50px', height: '50px',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    borderRadius: '25px',
-                    color: '#fff',
-                    textAlign: 'center',
-                    lineHeight: '50px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
+                    borderRadius: '25px', color: '#fff',
+                    textAlign: 'center', lineHeight: '50px',
+                    fontSize: '14px', fontWeight: 'bold',
                     boxShadow: '0 4px 12px rgba(102,126,234,0.4)'
                 }]
             });
             
-            document.getElementById('loading').style.display = 'none';
-            
-            // 샘플 데이터 로드
-            loadSampleData();
+            loadData();
         }
         
-        // 샘플 데이터 로드 (실제로는 서버에서 가져오기)
-        function loadSampleData() {
+        // 샘플 데이터 (좌표 직접 사용 - 즉시 표시!)
+        function loadData() {
             const sampleData = [
-                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 평택시 지제동 456-7', 감정가: 150000000, 최저가: 120000000, 면적: '500㎡' },
-                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 평택시 고덕동 123', 감정가: 200000000, 최저가: 160000000, 면적: '800㎡' },
-                { type: 'public', 구분: '공매', 물건종류: '토지', 주소: '경기도 화성시 봉담읍 와우리 123', 감정가: 80000000, 최저가: 64000000, 면적: '300㎡' },
-                { type: 'public', 구분: '공매', 물건종류: '토지', 주소: '경기도 화성시 동탄면 석우리 456', 감정가: 100000000, 최저가: 80000000, 면적: '400㎡' },
-                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 수원시 권선구 고색동 789', 감정가: 200000000, 최저가: 160000000, 면적: '800㎡' },
-                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 용인시 처인구 남사읍 완장리 234', 감정가: 120000000, 최저가: 96000000, 면적: '600㎡' },
-                { type: 'public', 구분: '공매', 물건종류: '토지', 주소: '경기도 안성시 죽산면 죽산리 567', 감정가: 90000000, 최저가: 72000000, 면적: '350㎡' },
-                { type: 'land', 구분: '보상토지', 사업명: '평택지제역세권', 주소: '경기도 평택시 지제동 234-5', 면적: '200㎡' },
-                { type: 'land', 구분: '보상토지', 사업명: '화성봉담3', 주소: '경기도 화성시 봉담읍 분천리 123', 면적: '150㎡' }
+                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 평택시 지제동 456-7', 
+                  lat: 37.0719, lng: 127.0769, 감정가: 150000000, 최저가: 120000000, 면적: '500㎡' },
+                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 평택시 고덕동 123',
+                  lat: 37.0842, lng: 127.0534, 감정가: 200000000, 최저가: 160000000, 면적: '800㎡' },
+                { type: 'public', 구분: '공매', 물건종류: '토지', 주소: '경기도 화성시 봉담읍 와우리 123',
+                  lat: 37.2158, lng: 126.9451, 감정가: 80000000, 최저가: 64000000, 면적: '300㎡' },
+                { type: 'public', 구분: '공매', 물건종류: '토지', 주소: '경기도 화성시 동탄면 석우리 456',
+                  lat: 37.1876, lng: 127.0842, 감정가: 100000000, 최저가: 80000000, 면적: '400㎡' },
+                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 수원시 권선구 고색동 789',
+                  lat: 37.2633, lng: 126.9782, 감정가: 200000000, 최저가: 160000000, 면적: '800㎡' },
+                { type: 'auction', 구분: '경매', 물건종류: '토지', 주소: '경기도 용인시 처인구 남사읍 완장리 234',
+                  lat: 37.1384, lng: 127.1889, 감정가: 120000000, 최저가: 96000000, 면적: '600㎡' },
+                { type: 'public', 구분: '공매', 물건종류: '토지', 주소: '경기도 안성시 죽산면 죽산리 567',
+                  lat: 37.0845, lng: 127.3156, 감정가: 90000000, 최저가: 72000000, 면적: '350㎡' },
+                { type: 'land', 구분: '보상토지', 사업명: '평택지제역세권', 주소: '경기도 평택시 지제동 234-5',
+                  lat: 37.0735, lng: 127.0754, 면적: '200㎡' },
+                { type: 'land', 구분: '보상토지', 사업명: '화성봉담3', 주소: '경기도 화성시 봉담읍 분천리 123',
+                  lat: 37.2145, lng: 126.9523, 면적: '150㎡' }
             ];
             
-            let auctionCount = 0;
-            let publicCount = 0;
-            let landCount = 0;
+            let auctionCount = 0, publicCount = 0, landCount = 0;
             
-            sampleData.forEach((item, index) => {
-                setTimeout(() => {
-                    addMarker(item);
-                    
-                    if (item.type === 'auction') auctionCount++;
-                    if (item.type === 'public') publicCount++;
-                    if (item.type === 'land') landCount++;
-                    
-                    updateStats(auctionCount, publicCount, landCount);
-                }, index * 300);
+            sampleData.forEach(item => {
+                addMarker(item);
+                if (item.type === 'auction') auctionCount++;
+                if (item.type === 'public') publicCount++;
+                if (item.type === 'land') landCount++;
             });
-        }
-        
-        // 통계 업데이트
-        function updateStats(auction, public_, land) {
-            document.getElementById('auction-count').textContent = auction.toLocaleString();
-            document.getElementById('public-count').textContent = public_.toLocaleString();
-            document.getElementById('land-count').textContent = land.toLocaleString();
+            
+            document.getElementById('auction-count').textContent = auctionCount;
+            document.getElementById('public-count').textContent = publicCount;
+            document.getElementById('land-count').textContent = landCount;
         }
         
         // 마커 추가
         function addMarker(data) {
-            geocoder.addressSearch(data.주소, function(result, status) {
-                if (status === kakao.maps.services.Status.OK) {
-                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-                    
-                    // 마커 색상
-                    let color = '#667eea';
-                    let emoji = '경';
-                    if (data.type === 'public') {
-                        color = '#9b59b6';
-                        emoji = '공';
-                    } else if (data.type === 'land') {
-                        color = '#2ecc71';
-                        emoji = '토';
-                    }
-                    
-                    // SVG 마커 생성
-                    const markerImage = new kakao.maps.MarkerImage(
-                        `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter></defs><path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26c0-8.8-7.2-16-16-16z" fill="${color}" filter="url(%23shadow)"/><circle cx="16" cy="16" r="10" fill="white"/><text x="16" y="21" text-anchor="middle" fill="${color}" font-size="14" font-weight="bold">${emoji}</text></svg>`,
-                        new kakao.maps.Size(32, 42)
-                    );
-                    
-                    const marker = new kakao.maps.Marker({
-                        position: coords,
-                        image: markerImage
-                    });
-                    
-                    // 인포윈도우
-                    const content = createInfoWindowContent(data, coords);
-                    const infowindow = new kakao.maps.InfoWindow({
-                        content: content
-                    });
-                    
-                    // 클릭 이벤트
-                    kakao.maps.event.addListener(marker, 'click', function() {
-                        if (currentInfowindow) {
-                            currentInfowindow.close();
-                        }
-                        infowindow.open(map, marker);
-                        currentInfowindow = infowindow;
-                        map.setCenter(coords);
-                        map.setLevel(4);
-                    });
-                    
-                    // 마커 저장
-                    markers[data.type].push(marker);
-                    clusterer.addMarker(marker);
-                }
+            const coords = new kakao.maps.LatLng(data.lat, data.lng);
+            
+            let color = '#667eea', emoji = '경';
+            if (data.type === 'public') { color = '#9b59b6'; emoji = '공'; }
+            else if (data.type === 'land') { color = '#2ecc71'; emoji = '토'; }
+            
+            const markerImage = new kakao.maps.MarkerImage(
+                `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42"><defs><filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter></defs><path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26c0-8.8-7.2-16-16-16z" fill="${color}" filter="url(%23shadow)"/><circle cx="16" cy="16" r="10" fill="white"/><text x="16" y="21" text-anchor="middle" fill="${color}" font-size="14" font-weight="bold">${emoji}</text></svg>`,
+                new kakao.maps.Size(32, 42)
+            );
+            
+            const marker = new kakao.maps.Marker({ position: coords, image: markerImage });
+            
+            const content = createInfoWindowContent(data, coords);
+            const infowindow = new kakao.maps.InfoWindow({ content: content });
+            
+            kakao.maps.event.addListener(marker, 'click', function() {
+                if (currentInfowindow) currentInfowindow.close();
+                infowindow.open(map, marker);
+                currentInfowindow = infowindow;
+                map.setCenter(coords);
+                map.setLevel(4);
             });
+            
+            markers[data.type].push(marker);
+            clusterer.addMarker(marker);
         }
         
-        // 인포윈도우 HTML 생성
+        // 인포윈도우 HTML
         function createInfoWindowContent(data, coords) {
             const priceInManWon = data.최저가 ? (data.최저가 / 10000).toLocaleString() : '-';
             const lat = coords.getLat();
@@ -638,7 +292,7 @@
                             <div class="price-value">${priceInManWon}만원</div>
                         </div>
                     ` : ''}
-                    <button class="polygon-btn" onclick='showPolygon("${data.주소}", [${lat}, ${lng}])'>
+                    <button class="polygon-btn" onclick='showPolygon("${data.주소}", ${lat}, ${lng})'>
                         🗺️ 땅 모양 보기
                     </button>
                 </div>
@@ -646,40 +300,20 @@
         }
         
         // 폴리곤 표시
-        function showPolygon(address, coords) {
-            // 기존 폴리곤 제거
+        function showPolygon(address, lat, lng) {
             polygons.forEach(p => p.setMap(null));
             polygons = [];
             
-            const center = new kakao.maps.LatLng(coords[0], coords[1]);
-            
-            // V-World API 호출
-            fetch(`https://api.vworld.kr/req/address?service=address&request=getcoord&version=2.0&crs=epsg:4326&address=${encodeURIComponent(address)}&refine=true&simple=false&format=json&type=parcel&key=${VWORLD_API_KEY}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.response?.status === 'OK') {
-                        // 성공 시 실제 폴리곤 그리기 (구현 필요)
-                        createSamplePolygon(center);
-                    } else {
-                        createSamplePolygon(center);
-                    }
-                })
-                .catch(() => {
-                    createSamplePolygon(center);
-                });
-        }
-        
-        // 샘플 폴리곤
-        function createSamplePolygon(center) {
+            const center = new kakao.maps.LatLng(lat, lng);
             const radius = 40;
             const points = 24;
             const path = [];
             
             for (let i = 0; i < points; i++) {
                 const angle = (i / points) * 2 * Math.PI;
-                const lat = center.getLat() + (radius / 111000) * Math.cos(angle);
-                const lng = center.getLng() + (radius / (111000 * Math.cos(center.getLat() * Math.PI / 180))) * Math.sin(angle);
-                path.push(new kakao.maps.LatLng(lat, lng));
+                const pLat = lat + (radius / 111000) * Math.cos(angle);
+                const pLng = lng + (radius / (111000 * Math.cos(lat * Math.PI / 180))) * Math.sin(angle);
+                path.push(new kakao.maps.LatLng(pLat, pLng));
             }
             
             const polygon = new kakao.maps.Polygon({
@@ -714,20 +348,6 @@
             });
         }
         
-        // 사이드바 토글
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const icon = document.getElementById('toggle-icon');
-            sidebar.classList.toggle('collapsed');
-            icon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
-        }
-        
-        // 카테고리 포커스
-        function focusCategory(category) {
-            console.log('Focus on:', category);
-        }
-        
-        // 초기화
         window.onload = initMap;
     </script>
 </body>
