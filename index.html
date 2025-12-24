@@ -611,7 +611,7 @@
             <label class="layer-item">
                 <input type="checkbox" id="layer-land" onchange="toggleLayer('land')">
                 <div class="toggle"></div>
-                <div class="layer-color" style="background: #f97316; color: #f97316;"></div>
+                <div class="layer-color" style="background: #f59e0b; color: #f59e0b;"></div>
                 <span class="layer-name">사업지구 경계</span>
                 <span class="layer-count">215</span>
             </label>
@@ -633,42 +633,42 @@
                 <span class="layer-count" style="background:#10b981;color:#fff">25</span>
             </label>
             <label class="layer-item">
-                <input type="checkbox" id="layer-nearby-1km" checked onchange="toggleLayer('nearby_1km')">
+                <input type="checkbox" id="layer-need-check" checked onchange="toggleLayer('need_check')">
                 <div class="toggle"></div>
-                <div class="layer-color" style="background: #f97316; color: #f97316;"></div>
-                <span class="layer-name">1km 이내</span>
-                <span class="layer-count">1,440</span>
+                <div class="layer-color" style="background: #f59e0b; color: #f59e0b;"></div>
+                <span class="layer-name">지구내 경공매 확인필요</span>
+                <span class="layer-count" style="background:#f59e0b;color:#fff">18</span>
             </label>
             <label class="layer-item">
                 <input type="checkbox" id="layer-general-auction" onchange="toggleLayer('auction')">
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #6366f1; color: #6366f1;"></div>
-                <span class="layer-name">일반 경매</span>
+                <span class="layer-name">경매</span>
                 <span class="layer-count">25,244</span>
             </label>
             <label class="layer-item">
                 <input type="checkbox" id="layer-general-public" onchange="toggleLayer('public')">
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #a855f7; color: #a855f7;"></div>
-                <span class="layer-name">일반 공매</span>
+                <span class="layer-name">공매</span>
                 <span class="layer-count">4,537</span>
             </label>
         </div>
         <div class="layer-group">
             <div class="layer-title">거리 필터</div>
             <label class="layer-item" style="background:linear-gradient(90deg,#fbbf24 0%,#f59e0b 100%)">
-                <input type="checkbox" id="filter-500m" onchange="toggleDistanceFilter(500)">
+                <input type="checkbox" id="layer-nearby-500m" onchange="toggleLayer('nearby_500m')">
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #fbbf24; color: #fbbf24;"></div>
                 <span class="layer-name" style="color:#000;font-weight:600">500m 이내</span>
-                <span class="layer-count" id="count-500m" style="background:#fbbf24;color:#000">0</span>
+                <span class="layer-count" style="background:#fbbf24;color:#000">0</span>
             </label>
             <label class="layer-item" style="background:linear-gradient(90deg,#fb923c 0%,#f97316 100%)">
-                <input type="checkbox" id="filter-1km" onchange="toggleDistanceFilter(1000)">
+                <input type="checkbox" id="layer-nearby-1km" onchange="toggleLayer('nearby_1km')">
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #fb923c; color: #fb923c;"></div>
                 <span class="layer-name" style="color:#000;font-weight:600">1km 이내</span>
-                <span class="layer-count" id="count-1km" style="background:#fb923c;color:#000">0</span>
+                <span class="layer-count" id="style="background:#fb923c;color:#000">1,425</span>
             </label>
             <label class="layer-item" style="background:linear-gradient(90deg,#f87171 0%,#ef4444 100%)">
                 <input type="checkbox" id="filter-2km" onchange="toggleDistanceFilter(2000)">
@@ -715,7 +715,7 @@
 
     <div class="legend">
         <div class="legend-item"><span style="background: #10b981; color: #10b981;"></span><span>지구내</span></div>
-        <div class="legend-item"><span style="background: #f97316; color: #f97316;"></span><span>인근</span></div>
+        <div class="legend-item"><span style="background: #f59e0b; color: #f59e0b;"></span><span>인근</span></div>
         <div class="legend-item"><span style="background: #6366f1; color: #6366f1;"></span><span>경매</span></div>
         <div class="legend-item"><span style="background: #a855f7; color: #a855f7;"></span><span>공매</span></div>
     </div>
@@ -726,6 +726,7 @@
 var DATA_exact_match = [];
 
 var DATA_need_check = [];
+var DATA_nearby_500m = [];
 var DATA_nearby_1km = [];
 var DATA_general_auction = []; // 별도 JSON에서 로드
 var DATA_general_public = []; // 별도 JSON에서 로드
@@ -1520,7 +1521,7 @@ var COLORS = {
 var map, curPoly = null;
 var markers = {
     railway: [], highway: [], ic: [], development: [],
-    exact_match: [], need_check: [], nearby_1km: [], general_auction: [], general_public: [], land: []
+    exact_match: [], need_check: [], nearby_500m: [], nearby_1km: [], general_auction: [], general_public: [], land: []
 };
 
 var clusterers = {};
@@ -1568,18 +1569,37 @@ var generalPublicLoaded = false;
         })
         .catch(err => console.error("확인필요 로드 실패:", err));
 
+    fetch("data_nearby_500m.json")
+        .then(r => r.json())
+        .then(data => {
+            console.log("500m이내 데이터 로드:", data.length);
+            data.forEach(d => {
+                var m = createMarkerNoMap(d.lat, d.lng, "#fbbf24", "nearby_500m");
+                var info = createAuctionInfo(d, "500m이내");
+                addClickEvent(m, info, d);
+                markers.nearby_500m.push(m);
+            });
+            clusterers.nearby_500m = new kakao.maps.MarkerClusterer({
+                map: null,
+                averageCenter: true,
+                minLevel: 7,
+                markers: markers.nearby_500m
+            });
+        })
+        .catch(err => console.error("500m이내 로드 실패:", err));
+
     fetch("data_nearby_1km.json")
         .then(r => r.json())
         .then(data => {
             console.log("1km이내 데이터 로드:", data.length);
             data.forEach(d => {
-                var m = createMarkerNoMap(d.lat, d.lng, "#f97316", "nearby_1km");
+                var m = createMarkerNoMap(d.lat, d.lng, "#fb923c", "nearby_1km");
                 var info = createAuctionInfo(d, "1km이내");
                 addClickEvent(m, info, d);
                 markers.nearby_1km.push(m);
             });
             clusterers.nearby_1km = new kakao.maps.MarkerClusterer({
-                map: map,
+                map: null,
                 averageCenter: true,
                 minLevel: 7,
                 markers: markers.nearby_1km
@@ -1710,7 +1730,7 @@ function toggle500mFilter() {
 
         // 경공매 중 500m 이내인 것만 표시
         var count = 0;
-        var categories = ['exact_match', 'need_check', 'nearby_1km', 'general_auction', 'general_public'];
+        var categories = ['exact_match', 'need_check', 'nearby_500m', 'nearby_1km', 'general_auction', 'general_public'];
 
         categories.forEach(function(cat) {
             markers[cat].forEach(function(m) {
@@ -1743,7 +1763,7 @@ function toggle500mFilter() {
 
     } else {
         // 필터 해제 - 원래 상태로
-        var categories = ['exact_match', 'need_check', 'nearby_1km', 'general_auction', 'general_public'];
+        var categories = ['exact_match', 'need_check', 'nearby_500m', 'nearby_1km', 'general_auction', 'general_public'];
         categories.forEach(function(cat) {
             var layerChk = document.getElementById('layer-' + cat);
             if (layerChk) {
@@ -2095,7 +2115,7 @@ function toggleLayer(category) {
     var show = chk.checked;
 
     // 500m 필터가 활성화되어 있으면 필터 재적용
-    if (filter500mEnabled && ['exact_match', 'need_check', 'nearby_1km', 'general_auction', 'general_public'].indexOf(category) >= 0) {
+    if (filter500mEnabled && ['exact_match', 'need_check', 'nearby_500m', 'nearby_1km', 'general_auction', 'general_public'].indexOf(category) >= 0) {
         toggle500mFilter();
         return;
     }
@@ -2312,7 +2332,7 @@ function applyPriceFilter() {
     var selected = document.querySelector('input[name="price"]:checked').value;
     currentPriceFilter = selected;
 
-    var categories = ['exact_match', 'need_check', 'nearby_1km', 'general_auction', 'general_public'];
+    var categories = ['exact_match', 'need_check', 'nearby_500m', 'nearby_1km', 'general_auction', 'general_public'];
     var count = 0;
 
     categories.forEach(function(cat) {
