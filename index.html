@@ -1746,22 +1746,17 @@ function init() {
             console.log("완전일치 데이터 로드:", data.length);
             DATA_exact_match = data;
             data.forEach(function(d) {
-                var m = createMarkerNoMap(d.lat, d.lng, COLORS.exact_match, 'exact_match');
+                var m = createMarker(d.lat, d.lng, COLORS.exact_match, 'exact_match');
                 var info = createAuctionInfo(d, '완전일치');
                 addClickEvent(m, info, d);
                 markers.exact_match.push(m);
                 auctionDataByMarker.set(m, d);
             });
-            clusterers.exact_match = new kakao.maps.MarkerClusterer({
-                map: null,
-                averageCenter: true,
-                minLevel: 7,
-                markers: markers.exact_match
-            });
-            // 체크박스가 이미 체크되어 있으면 표시
+            console.log('완전일치 마커 생성 완료:', markers.exact_match.length, '개');
+            // 체크박스가 체크되어 있으면 표시
             var chk = document.getElementById('layer-exact-match');
             if (chk && chk.checked) {
-                clusterers.exact_match.setMap(map);
+                markers.exact_match.forEach(function(m) { m.setMap(map); });
                 console.log('완전일치 자동 표시 (체크박스 체크됨)');
             }
         })
@@ -1774,22 +1769,17 @@ function init() {
             console.log("확인필요 데이터 로드:", data.length);
             DATA_need_check = data;
             data.forEach(function(d) {
-                var m = createMarkerNoMap(d.lat, d.lng, COLORS.need_check, 'need_check');
+                var m = createMarker(d.lat, d.lng, COLORS.need_check, 'need_check');
                 var info = createAuctionInfo(d, '확인필요');
                 addClickEvent(m, info, d);
                 markers.need_check.push(m);
                 auctionDataByMarker.set(m, d);
             });
-            clusterers.need_check = new kakao.maps.MarkerClusterer({
-                map: null,
-                averageCenter: true,
-                minLevel: 7,
-                markers: markers.need_check
-            });
-            // 체크박스가 이미 체크되어 있으면 표시
+            console.log('확인필요 마커 생성 완료:', markers.need_check.length, '개');
+            // 체크박스가 체크되어 있으면 표시
             var chk = document.getElementById('layer-need-check');
             if (chk && chk.checked) {
-                clusterers.need_check.setMap(map);
+                markers.need_check.forEach(function(m) { m.setMap(map); });
                 console.log('확인필요 자동 표시 (체크박스 체크됨)');
             }
         })
@@ -1802,22 +1792,17 @@ function init() {
             console.log("500m 이내 데이터 로드:", data.length);
             DATA_nearby_500m = data;
             data.forEach(function(d) {
-                var m = createMarkerNoMap(d.lat, d.lng, COLORS.nearby_500m, 'nearby_500m');
+                var m = createMarker(d.lat, d.lng, COLORS.nearby_500m, 'nearby_500m');
                 var info = createAuctionInfo(d, '500m이내');
                 addClickEvent(m, info, d);
                 markers.nearby_500m.push(m);
                 auctionDataByMarker.set(m, d);
             });
-            clusterers.nearby_500m = new kakao.maps.MarkerClusterer({
-                map: null,
-                averageCenter: true,
-                minLevel: 7,
-                markers: markers.nearby_500m
-            });
-            // 체크박스가 이미 체크되어 있으면 표시
+            console.log('500m 이내 마커 생성 완료:', markers.nearby_500m.length, '개');
+            // 체크박스가 체크되어 있으면 표시
             var chk = document.getElementById('layer-nearby-500m');
             if (chk && chk.checked) {
-                clusterers.nearby_500m.setMap(map);
+                markers.nearby_500m.forEach(function(m) { m.setMap(map); });
                 console.log('500m 이내 자동 표시 (체크박스 체크됨)');
             }
         })
@@ -1830,22 +1815,17 @@ function init() {
             console.log("1km 이내 데이터 로드:", data.length);
             DATA_nearby_1km = data;
             data.forEach(function(d) {
-                var m = createMarkerNoMap(d.lat, d.lng, COLORS.nearby_1km, 'nearby_1km');
+                var m = createMarker(d.lat, d.lng, COLORS.nearby_1km, 'nearby_1km');
                 var info = createAuctionInfo(d, '1km이내');
                 addClickEvent(m, info, d);
                 markers.nearby_1km.push(m);
                 auctionDataByMarker.set(m, d);
             });
-            clusterers.nearby_1km = new kakao.maps.MarkerClusterer({
-                map: null,
-                averageCenter: true,
-                minLevel: 7,
-                markers: markers.nearby_1km
-            });
-            // 체크박스가 이미 체크되어 있으면 표시
+            console.log('1km 이내 마커 생성 완료:', markers.nearby_1km.length, '개');
+            // 체크박스가 체크되어 있으면 표시
             var chk = document.getElementById('layer-nearby-1km');
             if (chk && chk.checked) {
-                clusterers.nearby_1km.setMap(map);
+                markers.nearby_1km.forEach(function(m) { m.setMap(map); });
                 console.log('1km 이내 자동 표시 (체크박스 체크됨)');
             }
         })
