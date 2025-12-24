@@ -1562,29 +1562,20 @@ function loadPublicData(callback) {
         });
 }
 
-// 뷰포트 기반 마커 생성 (경매/공매용)
+// 뷰포트 기반 마커 생성 (경매/공매용) - 최대 500개로 제한
 function updateAuctionMarkersInViewport() {
     var bounds = map.getBounds();
     var level = map.getLevel();
-
-    // 줌 레벨이 너무 낮으면 (너무 zoomed out) 마커 표시 안함
-    if (level > 8) {
-        if (clusterers.general_auction && clusterers.general_auction.getMap()) {
-            clusterers.general_auction.clear();
-        }
-        if (clusterers.general_public && clusterers.general_public.getMap()) {
-            clusterers.general_public.clear();
-        }
-        return;
-    }
+    var maxMarkers = 500;  // 성능을 위해 최대 500개로 제한
 
     // 경매 마커 업데이트
     if (clusterers.general_auction && clusterers.general_auction.getMap()) {
         var auctionMarkersToShow = [];
         var sw = bounds.getSouthWest();
         var ne = bounds.getNorthEast();
+        var count = 0;
 
-        for (var i = 0; i < generalAuctionData.length; i++) {
+        for (var i = 0; i < generalAuctionData.length && count < maxMarkers; i++) {
             var d = generalAuctionData[i];
             if (d.lat >= sw.getLat() && d.lat <= ne.getLat() &&
                 d.lng >= sw.getLng() && d.lng <= ne.getLng()) {
@@ -1592,12 +1583,13 @@ function updateAuctionMarkersInViewport() {
                 var info = createAuctionInfo(d, "경매");
                 addClickEvent(m, info, d);
                 auctionMarkersToShow.push(m);
+                count++;
             }
         }
 
         clusterers.general_auction.clear();
         clusterers.general_auction.addMarkers(auctionMarkersToShow);
-        console.log("경매 마커 업데이트:", auctionMarkersToShow.length, "개");
+        console.log("경매 마커 업데이트:", auctionMarkersToShow.length, "개 (줌 레벨: " + level + ")");
     }
 
     // 공매 마커 업데이트
@@ -1605,8 +1597,9 @@ function updateAuctionMarkersInViewport() {
         var publicMarkersToShow = [];
         var sw = bounds.getSouthWest();
         var ne = bounds.getNorthEast();
+        var count = 0;
 
-        for (var i = 0; i < generalPublicData.length; i++) {
+        for (var i = 0; i < generalPublicData.length && count < maxMarkers; i++) {
             var d = generalPublicData[i];
             if (d.lat >= sw.getLat() && d.lat <= ne.getLat() &&
                 d.lng >= sw.getLng() && d.lng <= ne.getLng()) {
@@ -1614,12 +1607,13 @@ function updateAuctionMarkersInViewport() {
                 var info = createAuctionInfo(d, "공매");
                 addClickEvent(m, info, d);
                 publicMarkersToShow.push(m);
+                count++;
             }
         }
 
         clusterers.general_public.clear();
         clusterers.general_public.addMarkers(publicMarkersToShow);
-        console.log("공매 마커 업데이트:", publicMarkersToShow.length, "개");
+        console.log("공매 마커 업데이트:", publicMarkersToShow.length, "개 (줌 레벨: " + level + ")");
     }
 }
 
