@@ -1543,13 +1543,7 @@ function loadAuctionData(callback) {
                     // 다음 배치를 비동기로 처리
                     setTimeout(processBatch, 0);
                 } else {
-                    // 모든 마커 생성 완료 - 클러스터러 생성
-                    clusterers.general_auction = new kakao.maps.MarkerClusterer({
-                        map: null,
-                        averageCenter: true,
-                        minLevel: 7,
-                        markers: markers.general_auction
-                    });
+                    // 모든 마커 생성 완료
                     generalAuctionLoaded = true;
                     console.log("경매 마커 생성 완료:", markers.general_auction.length);
                     callback();
@@ -1589,13 +1583,7 @@ function loadPublicData(callback) {
                     // 다음 배치를 비동기로 처리
                     setTimeout(processBatch, 0);
                 } else {
-                    // 모든 마커 생성 완료 - 클러스터러 생성
-                    clusterers.general_public = new kakao.maps.MarkerClusterer({
-                        map: null,
-                        averageCenter: true,
-                        minLevel: 7,
-                        markers: markers.general_public
-                    });
+                    // 모든 마커 생성 완료
                     generalPublicLoaded = true;
                     console.log("공매 마커 생성 완료:", markers.general_public.length);
                     callback();
@@ -2113,9 +2101,11 @@ function toggleLayer(category) {
     if (category === 'general_auction' && show && !generalAuctionLoaded) {
         console.log('경매 데이터 로딩 시작...');
         loadAuctionData(function() {
-            if (clusterers.general_auction) {
-                clusterers.general_auction.setMap(map);
-                console.log('경매 클러스터러 표시 완료');
+            // 로딩 완료 후 체크박스가 여전히 체크되어 있으면 표시
+            var chk = document.getElementById('layer-general_auction');
+            if (chk && chk.checked && markers.general_auction) {
+                markers.general_auction.forEach(function(m) { m.setMap(map); });
+                console.log('경매 마커 표시 완료:', markers.general_auction.length);
             }
         });
         return;
@@ -2123,25 +2113,24 @@ function toggleLayer(category) {
     if (category === 'general_public' && show && !generalPublicLoaded) {
         console.log('공매 데이터 로딩 시작...');
         loadPublicData(function() {
-            if (clusterers.general_public) {
-                clusterers.general_public.setMap(map);
-                console.log('공매 클러스터러 표시 완료');
+            // 로딩 완료 후 체크박스가 여전히 체크되어 있으면 표시
+            var chk = document.getElementById('layer-general_public');
+            if (chk && chk.checked && markers.general_public) {
+                markers.general_public.forEach(function(m) { m.setMap(map); });
+                console.log('공매 마커 표시 완료:', markers.general_public.length);
             }
         });
         return;
     }
 
-    // 클러스터러가 있는 카테고리 처리
-    if (clusterers[category]) {
-        clusterers[category].setMap(show ? map : null);
-        console.log('클러스터러 토글 완료:', category, '마커 수:', clusterers[category].getMarkers().length);
-    } else if (markers[category] && markers[category].length > 0) {
+    // 모든 카테고리를 markers 배열로 직접 처리
+    if (markers[category] && markers[category].length > 0) {
         markers[category].forEach(function(m) {
             m.setMap(show ? map : null);
         });
-        console.log('마커 토글 완료:', category, '마커 수:', markers[category].length);
+        console.log('마커 토글 완료:', category, '표시:', show, '마커 수:', markers[category].length);
     } else {
-        console.warn('카테고리를 찾을 수 없습니다:', category, 'clusterers:', !!clusterers[category], 'markers:', markers[category] ? markers[category].length : 0);
+        console.warn('마커를 찾을 수 없습니다:', category, '마커 수:', markers[category] ? markers[category].length : 0);
     }
 }
 
