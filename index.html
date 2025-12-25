@@ -2235,7 +2235,7 @@ function handleSearchKeyup(e) {
 }
 
 function performSearch() {
-    var query = document.getElementById('search-input').value.trim().toLowerCase();
+    var query = document.getElementById('search-input').value.trim();
     var resultsDiv = document.getElementById('search-results');
 
     if (query.length < 2) {
@@ -2243,23 +2243,66 @@ function performSearch() {
         return;
     }
 
-    var results = allSearchableItems.filter(function(item) {
-        return (item.name && item.name.toLowerCase().includes(query)) ||
-               (item.address && item.address.toLowerCase().includes(query));
-    }).slice(0, 10);
+    var queryLower = query.toLowerCase();
+    
+    // 1. 내부 데이터 검색
+    var internalResults = allSearchableItems.filter(function(item) {
+        return (item.name && item.name.toLowerCase().includes(queryLower)) ||
+               (item.address && item.address.toLowerCase().includes(queryLower));
+    }).slice(0, 5);
 
-    if (results.length === 0) {
-        resultsDiv.innerHTML = '<div class="search-result-item"><div class="search-result-name">검색 결과가 없습니다</div></div>';
-    } else {
-        resultsDiv.innerHTML = results.map(function(r) {
-            return '<div class="search-result-item" onclick="goToLocation(' + r.lat + ',' + r.lng + ',\'' +
-                   r.name.replace(/'/g, "\\'") + '\')">' +
-                   '<div class="search-result-name"><span class="search-result-cat">' + r.category + '</span>' +
-                   r.name + '</div>' +
-                   '<div class="search-result-addr">' + (r.address || '') + '</div></div>';
-        }).join('');
-    }
-    resultsDiv.classList.add('active');
+    // 2. 카카오 주소/장소 검색
+    var ps = new kakao.maps.services.Places();
+    var geocoder = new kakao.maps.services.Geocoder();
+    
+    // 주소 검색
+    geocoder.addressSearch(query, function(addrResults, status) {
+        var kakaoResults = [];
+        
+        if (status === kakao.maps.services.Status.OK) {
+            kakaoResults = addrResults.slice(0, 5).map(function(r) {
+                return {
+                    name: r.address_name,
+                    address: r.road_address ? r.road_address.address_name : '',
+                    lat: parseFloat(r.y),
+                    lng: parseFloat(r.x),
+                    category: '주소'
+                };
+            });
+        }
+        
+        // 장소 검색도 추가
+        ps.keywordSearch(query, function(placeResults, placeStatus) {
+            var placeItems = [];
+            if (placeStatus === kakao.maps.services.Status.OK) {
+                placeItems = placeResults.slice(0, 5).map(function(r) {
+                    return {
+                        name: r.place_name,
+                        address: r.road_address_name || r.address_name,
+                        lat: parseFloat(r.y),
+                        lng: parseFloat(r.x),
+                        category: r.category_group_name || '장소'
+                    };
+                });
+            }
+            
+            // 결과 합치기 (내부 + 주소 + 장소)
+            var allResults = internalResults.concat(kakaoResults).concat(placeItems).slice(0, 10);
+            
+            if (allResults.length === 0) {
+                resultsDiv.innerHTML = '<div class="search-result-item"><div class="search-result-name">검색 결과가 없습니다</div></div>';
+            } else {
+                resultsDiv.innerHTML = allResults.map(function(r) {
+                    var safeName = (r.name || '').replace(/'/g, "'");
+                    return '<div class="search-result-item" onclick="goToLocation(' + r.lat + ',' + r.lng + ','' + safeName + '')">' +
+                           '<div class="search-result-name"><span class="search-result-cat">' + (r.category || '') + '</span>' +
+                           (r.name || '') + '</div>' +
+                           '<div class="search-result-addr">' + (r.address || '') + '</div></div>';
+                }).join('');
+            }
+            resultsDiv.classList.add('active');
+        });
+    });
 }
 
 function goToLocation(lat, lng, name) {
