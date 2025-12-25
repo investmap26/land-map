@@ -631,14 +631,7 @@
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #10b981; color: #10b981;"></div>
                 <span class="layer-name">완전일치</span>
-                <span class="layer-count" style="background:#10b981;color:#fff">31</span>
-            </label>
-            <label class="layer-item">
-                <input type="checkbox" id="layer-need_check" onchange="toggleLayer('need_check')">
-                <div class="toggle"></div>
-                <div class="layer-color" style="background: #f59e0b; color: #f59e0b;"></div>
-                <span class="layer-name">확인필요</span>
-                <span class="layer-count" style="background:#f59e0b;color:#fff">24</span>
+                <span class="layer-count" style="background:#10b981;color:#fff">25</span>
             </label>
             <label class="layer-item">
                 <input type="checkbox" id="layer-general_auction" onchange="toggleLayer('general_auction')">
@@ -662,16 +655,9 @@
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #fbbf24; color: #fbbf24;"></div>
                 <span class="layer-name" style="color:#000;font-weight:600">500m 이내</span>
-                <span class="layer-count" style="background:#fbbf24;color:#000">674</span>
+                <span class="layer-count" style="background:#fbbf24;color:#000">417</span>
             </label>
-            <label class="layer-item" style="background:linear-gradient(90deg,#fb923c 0%,#f97316 100%)">
-                <input type="checkbox" id="layer-nearby_1km" onchange="toggleLayer('nearby_1km')">
-                <div class="toggle"></div>
-                <div class="layer-color" style="background: #fb923c; color: #fb923c;"></div>
-                <span class="layer-name" style="color:#000;font-weight:600">1km 이내</span>
-                <span class="layer-count" style="background:#fb923c;color:#000">1,425</span>
-            </label>
-            
+
         </div>
         <div class="layer-group">
             <div class="layer-title">가격 필터</div>
@@ -1499,7 +1485,7 @@ var COLORS = {
     highway: '#f59e0b',
     development: '#22c55e',
     exact_match: '#10b981',
-    need_check: '#f59e0b', nearby_500m: '#fbbf24', nearby_1km: '#fb923c',
+    nearby_500m: '#fbbf24',
     general_auction: '#6366f1',
     general_public: '#a855f7'
 };
@@ -1507,7 +1493,7 @@ var COLORS = {
 var map, curPoly = null;
 var markers = {
     railway: [], highway: [], ic: [], development: [],
-    exact_match: [], need_check: [], nearby_500m: [], nearby_1km: [],
+    exact_match: [], nearby_500m: [],
     general_auction: [], general_public: [], land: [], large_projects: []
 };
 
@@ -1754,29 +1740,6 @@ function init() {
         })
         .catch(function(err) { console.error("완전일치 로드 실패:", err); });
 
-    // 확인필요 데이터 로드
-    fetch("data_need_check.json")
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            console.log("확인필요 데이터 로드:", data.length);
-            DATA_need_check = data;
-            data.forEach(function(d) {
-                var m = createMarker(d.lat, d.lng, COLORS.need_check, 'need_check');
-                var info = createAuctionInfo(d, '확인필요');
-                addClickEvent(m, info, d);
-                markers.need_check.push(m);
-                auctionDataByMarker.set(m, d);
-            });
-            console.log('확인필요 마커 생성 완료:', markers.need_check.length, '개');
-            // 체크박스가 체크되어 있으면 표시
-            var chk = document.getElementById('layer-need_check');
-            if (chk && chk.checked) {
-                markers.need_check.forEach(function(m) { m.setMap(map); });
-                console.log('확인필요 자동 표시 (체크박스 체크됨)');
-            }
-        })
-        .catch(function(err) { console.error("확인필요 로드 실패:", err); });
-
     // 500m 이내 데이터 로드
     fetch("data_nearby_500m.json")
         .then(function(r) { return r.json(); })
@@ -1799,29 +1762,6 @@ function init() {
             }
         })
         .catch(function(err) { console.error("500m 이내 로드 실패:", err); });
-
-    // 1km 이내 데이터 로드
-    fetch("data_nearby_1km.json")
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            console.log("1km 이내 데이터 로드:", data.length);
-            DATA_nearby_1km = data;
-            data.forEach(function(d) {
-                var m = createMarker(d.lat, d.lng, COLORS.nearby_1km, 'nearby_1km');
-                var info = createAuctionInfo(d, '1km이내');
-                addClickEvent(m, info, d);
-                markers.nearby_1km.push(m);
-                auctionDataByMarker.set(m, d);
-            });
-            console.log('1km 이내 마커 생성 완료:', markers.nearby_1km.length, '개');
-            // 체크박스가 체크되어 있으면 표시
-            var chk = document.getElementById('layer-nearby_1km');
-            if (chk && chk.checked) {
-                markers.nearby_1km.forEach(function(m) { m.setMap(map); });
-                console.log('1km 이내 자동 표시 (체크박스 체크됨)');
-            }
-        })
-        .catch(function(err) { console.error("1km 이내 로드 실패:", err); });
 
     // 사업지구 마커 로드 (폴리곤으로 표현 안되는 프로젝트)
     fetch("data_project_markers.json")
@@ -2000,16 +1940,18 @@ function createMarker(lat, lng, color, type) {
 }
 
 function createAuctionInfo(d, type) {
-    var typeColor = type === '공매' ? '#a855f7' : type === '지구내' ? '#ef4444' : type === '지구인근' ? '#f97316' : '#6366f1';
+    var typeColor = type === '공매' ? '#a855f7' : type === '지구내' ? '#ef4444' : type === '지구인근' ? '#f97316' : type === '500m이내' ? '#fbbf24' : '#6366f1';
     var projectInfo = d.project ? '<div style="margin-top:8px;padding:8px;background:rgba(239,68,68,0.1);border-radius:6px;border-left:3px solid #ef4444;font-size:11px;color:#fca5a5">📍 ' + d.project + '</div>' : '';
+    var distanceInfo = d.distance ? '<div style="margin-top:8px;padding:6px;background:rgba(251,191,36,0.1);border-radius:6px;border-left:3px solid #fbbf24;font-size:11px;color:#fbbf24">📏 보상지와 거리: ' + d.distance + 'm</div>' : '';
+    var ratio = d.ratio || (d.appraisal && d.min_price ? Math.round(d.min_price / d.appraisal * 100) + '%' : '');
     return '<div style="padding:16px 20px;max-width:320px;font-size:12px;line-height:1.7;background:#1a1a1f;color:#e5e5e5;border-radius:12px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif">' +
         '<div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:8px">' + d.case_no + '</div>' +
         '<div style="color:rgba(255,255,255,0.5);font-size:11px;margin-bottom:12px">' + d.address + '</div>' +
-        projectInfo +
+        projectInfo + distanceInfo +
         '<div style="display:grid;gap:6px;margin-top:10px">' +
         '<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.5)">용도</span><span>' + (d.usage || '') + '</span></div>' +
         '<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.5)">감정가</span><span style="color:#6366f1;font-weight:600">' + formatPrice(d.appraisal) + '</span></div>' +
-        '<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.5)">최저가</span><span style="color:#a855f7;font-weight:600">' + formatPrice(d.min_price) + ' <span style="color:rgba(255,255,255,0.4);font-weight:400">(' + (d.ratio || '') + ')</span></span></div>' +
+        '<div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.5)">최저가</span><span style="color:#a855f7;font-weight:600">' + formatPrice(d.min_price) + ' <span style="color:rgba(255,255,255,0.4);font-weight:400">(' + ratio + ')</span></span></div>' +
         '</div>' +
         '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;align-items:center">' +
         '<span style="color:rgba(255,255,255,0.4);font-size:11px">' + (d.status || '') + ' | ' + (d.date || '') + '</span>' +
