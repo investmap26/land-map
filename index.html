@@ -2141,25 +2141,11 @@ function setMapType(type) {
     document.getElementById('btn-skyview').classList.remove('active');
     document.getElementById('btn-' + type).classList.add('active');
 
-    // 스카이뷰 선택 시 지적도 오버레이 제거
-    if (type === 'skyview' && cadastralOn) {
-        cadastralOn = false;
-        map.removeOverlayMapTypeId(kakao.maps.MapTypeId.USE_DISTRICT);
-        document.getElementById('btn-cadastral').classList.remove('active');
-    }
-
     console.log('지도 타입 변경:', type);
 }
 
 var cadastralOn = false;
 function toggleCadastral() {
-    // 스카이뷰에서는 지적도 사용 불가
-    var currentMapType = map.getMapTypeId();
-    if (currentMapType === kakao.maps.MapTypeId.HYBRID) {
-        alert('지적도는 일반 지도에서만 사용할 수 있습니다.');
-        return;
-    }
-
     cadastralOn = !cadastralOn;
     var btn = document.getElementById('btn-cadastral');
 
@@ -2215,26 +2201,39 @@ function toggleRoadviewMode() {
 // 로드뷰 표시
 function showRoadview(lat, lng) {
     var position = new kakao.maps.LatLng(lat, lng);
+    console.log('로드뷰 검색 시작:', lat, lng);
 
-    // 가장 가까운 로드뷰 위치 찾기 (300m 범위로 확대)
-    roadviewClient.getNearestPanoId(position, 300, function(panoId) {
+    // 가장 가까운 로드뷰 위치 찾기 (500m 범위로 확대)
+    roadviewClient.getNearestPanoId(position, 500, function(panoId) {
+        console.log('로드뷰 PanoId:', panoId);
+
         if (panoId === null) {
-            alert('이 위치 근처에는 로드뷰가 없습니다. 도로 근처로 이동해주세요.');
+            alert('이 위치 근처 500m 이내에는 로드뷰가 없습니다.\n도로 근처로 이동 후 다시 시도해주세요.');
+            // 버튼 active 상태 제거
+            var btn = document.getElementById('btn-roadview');
+            if (btn) btn.classList.remove('active');
             return;
         }
 
-        // 로드뷰 컨테이너 먼저 표시 (크기가 0이면 로드뷰가 안됨)
-        var rvContainer = document.getElementById('roadview');
-        rvContainer.classList.add('active');
-        document.querySelector('.roadview-close').classList.add('active');
+        try {
+            // 로드뷰 컨테이너 먼저 표시 (크기가 0이면 로드뷰가 안됨)
+            var rvContainer = document.getElementById('roadview');
+            rvContainer.classList.add('active');
+            document.querySelector('.roadview-close').classList.add('active');
 
-        // 로드뷰가 초기화되지 않았으면 지금 초기화
-        if (!roadview) {
-            roadview = new kakao.maps.Roadview(rvContainer);
+            // 로드뷰가 초기화되지 않았으면 지금 초기화
+            if (!roadview) {
+                console.log('로드뷰 객체 생성');
+                roadview = new kakao.maps.Roadview(rvContainer);
+            }
+
+            // 로드뷰 이동
+            roadview.setPanoId(panoId, position);
+            console.log('로드뷰 표시 완료');
+        } catch(e) {
+            console.error('로드뷰 표시 오류:', e);
+            alert('로드뷰를 표시하는 중 오류가 발생했습니다.');
         }
-
-        // 로드뷰 이동
-        roadview.setPanoId(panoId, position);
     });
 }
 
@@ -2653,8 +2652,14 @@ function closeParcelInfo() {
 }
 
 function initRoadview() {
-    // roadviewClient만 먼저 초기화 (로드뷰는 표시될 때 생성)
-    roadviewClient = new kakao.maps.RoadviewClient();
+    try {
+        // roadviewClient만 먼저 초기화 (로드뷰는 표시될 때 생성)
+        roadviewClient = new kakao.maps.RoadviewClient();
+        console.log('로드뷰 클라이언트 초기화 완료');
+    } catch(e) {
+        console.error('로드뷰 초기화 실패:', e);
+        roadviewClient = null;
+    }
 }
 </script>
 <script>
