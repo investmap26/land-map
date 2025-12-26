@@ -1672,15 +1672,15 @@ function init() {
     var container = document.getElementById('map');
     map = new kakao.maps.Map(container, {
         center: new kakao.maps.LatLng(36.5, 127.5),
-        level: 8
+        level: 13
     });
 
-    // 마우스 휠 확대/축소 속도 3배 개선 (매우 민감하게)
+    // 마우스 휠 확대/축소 속도 극대화 (초민감)
     var lastWheelTime = 0;
     container.addEventListener('wheel', function(e) {
         var now = Date.now();
-        // 50ms 이내 연속 휠 이벤트는 무시
-        if (now - lastWheelTime < 50) {
+        // 30ms 이내 연속 휠 이벤트는 무시
+        if (now - lastWheelTime < 30) {
             e.preventDefault();
             return;
         }
@@ -1689,14 +1689,17 @@ function init() {
         var delta = e.deltaY;
         var currentLevel = map.getLevel();
 
-        // 임계값을 매우 낮춤 (조금만 스크롤해도 반응)
-        if (Math.abs(delta) > 5) {
+        // 임계값 최소화 (거의 모든 스크롤에 반응)
+        if (Math.abs(delta) > 1) {
+            // 큰 스크롤은 2레벨, 작은 스크롤은 1레벨 변경
+            var step = Math.abs(delta) > 50 ? 2 : 1;
+
             if (delta > 0) {
                 // 축소 (레벨 증가)
-                map.setLevel(currentLevel + 1, {animate: false});
+                map.setLevel(currentLevel + step, {animate: false});
             } else {
                 // 확대 (레벨 감소)
-                map.setLevel(currentLevel - 1, {animate: false});
+                map.setLevel(currentLevel - step, {animate: false});
             }
             e.preventDefault();
         }
@@ -2164,8 +2167,8 @@ function zoomIn() { map.setLevel(map.getLevel() - 1); }
 function zoomOut() { map.setLevel(map.getLevel() + 1); }
 function resetZoom() {
     map.setCenter(new kakao.maps.LatLng(36.5, 127.5));
-    map.setLevel(8);
-    console.log('초기화: 레벨 8');
+    map.setLevel(13);
+    console.log('초기화: 레벨 13');
 }
 function maxZoom() {
     // 확대 뷰 (레벨 3)
