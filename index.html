@@ -1919,11 +1919,11 @@ function init() {
 
 // 맵에 추가하지 않는 마커 생성 (클러스터러용)
 function createMarkerNoMap(lat, lng, color, type) {
-    var size = type === 'auction' || type === 'public' ? 8 : 5;  // 사업지구 마커 크기 축소 (10 → 5)
+    var size = type === 'auction' || type === 'public' || type === 'general_auction' || type === 'general_public' || type === 'exact_match' || type === 'nearby_500m' ? 12 : 5;
     var img = new kakao.maps.MarkerImage(
-        'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + (size*2) + '" height="' + (size*2) + '"><circle cx="' + size + '" cy="' + size + '" r="' + (size-1) + '" fill="' + color + '" stroke="#fff" stroke-width="1.5"/></svg>'),
-        new kakao.maps.Size(size*2, size*2),
-        { offset: new kakao.maps.Point(size, size) }
+        'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + (size*2+4) + '" height="' + (size*2+4) + '"><defs><filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.4"/></filter></defs><circle cx="' + (size+2) + '" cy="' + (size+2) + '" r="' + size + '" fill="' + color + '" stroke="#fff" stroke-width="3" filter="url(#shadow)"/></svg>'),
+        new kakao.maps.Size(size*2+4, size*2+4),
+        { offset: new kakao.maps.Point(size+2, size+2) }
     );
     return new kakao.maps.Marker({
         position: new kakao.maps.LatLng(lat, lng),
