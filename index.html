@@ -2107,6 +2107,16 @@ function toggleLayer(category) {
         return;
     }
 
+    // 완전일치/500m는 polygons 사용
+    if (category === 'exact' && exactLoaded) {
+        polygons.exact.forEach(function(p) { p.setMap(show ? map : null); });
+        return;
+    }
+    if (category === 'nearby500' && nearby500Loaded) {
+        polygons.nearby500.forEach(function(p) { p.setMap(show ? map : null); });
+        return;
+    }
+
     // 클러스터러가 있는 카테고리 처리
     if (clusterers[category]) {
         clusterers[category].setMap(show ? map : null);
