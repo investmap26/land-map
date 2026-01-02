@@ -1512,21 +1512,29 @@ function loadExactMatchData(callback) {
                 });
                 var poly = new kakao.maps.Polygon({
                     path: path,
-                    strokeWeight: 2,
+                    strokeWeight: 3,
                     strokeColor: '#10b981',
-                    strokeOpacity: 0.8,
+                    strokeOpacity: 1,
                     fillColor: '#10b981',
-                    fillOpacity: 0.4
+                    fillOpacity: 0.5
                 });
                 kakao.maps.event.addListener(poly, 'click', function() {
-                    var info = '<div style="padding:12px;background:#1a1a1f;color:#fff;border-radius:8px;font-size:12px;max-width:300px">' +
-                        '<div style="font-weight:600;color:#10b981;margin-bottom:8px">완전일치</div>' +
-                        '<div>' + (d.address || '-') + '</div>' +
-                        '<div style="margin-top:6px;color:#94a3b8">사건번호: ' + (d.case_no || '-') + '</div>' +
-                        '</div>';
+                    var info = '<div style="padding:14px;background:#1a1a1f;color:#fff;border-radius:10px;font-size:12px;max-width:350px;border:1px solid #10b981">' +
+                        '<div style="font-weight:700;color:#10b981;margin-bottom:10px;font-size:14px">완전일치</div>' +
+                        '<div style="margin-bottom:6px">' + (d.address || '-') + '</div>' +
+                        '<div style="color:#94a3b8;font-size:11px;line-height:1.6">' +
+                        '사건번호: ' + (d.case_no || '-') + '<br>' +
+                        '매각일: ' + (d.date || '-') + '<br>' +
+                        '종류: ' + (d.type || '-') + '<br>' +
+                        '관련사업: ' + (d.project || '-') + '<br>' +
+                        '용도: ' + (d.usage || '-') + '<br>' +
+                        '면적: ' + (d.area || '-') + '<br>' +
+                        '감정가: ' + (d.appraisal ? Number(d.appraisal).toLocaleString() + '원' : '-') + '<br>' +
+                        '최저가: ' + (d.min_price ? Number(d.min_price).toLocaleString() + '원' : '-') +
+                        '</div></div>';
                     var iw = new kakao.maps.InfoWindow({ content: info });
                     iw.open(map, new kakao.maps.LatLng(d.lat, d.lng));
-                    setTimeout(function() { iw.close(); }, 5000);
+                    setTimeout(function() { iw.close(); }, 8000);
                 });
                 polygons.exact.push(poly);
             });
