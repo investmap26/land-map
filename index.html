@@ -2088,14 +2088,14 @@ function toggleLayer(category) {
     // 완전일치 lazy loading
     if (category === 'exact' && show && !exactLoaded) {
         loadExactMatchData(function() {
-            markers.exact.forEach(function(m) { m.setMap(map); });
+            polygons.exact.forEach(function(p) { p.setMap(map); });
         });
         return;
     }
     // 500m 이내 lazy loading
     if (category === 'nearby500' && show && !nearby500Loaded) {
         loadNearby500Data(function() {
-            markers.nearby500.forEach(function(m) { m.setMap(map); });
+            polygons.nearby500.forEach(function(p) { p.setMap(map); });
         });
         return;
     }
@@ -2575,7 +2575,7 @@ function initRoadview() {
             loadFavorites();
             // 완전일치 데이터 자동 로드 (기본 체크됨)
             loadExactMatchData(function() {
-                markers.exact.forEach(function(m) { m.setMap(map); });
+                polygons.exact.forEach(function(p) { p.setMap(map); });
             });
         });
     };
