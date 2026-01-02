@@ -2694,6 +2694,7 @@ function initRoadview() {
             // 완전일치 데이터 자동 로드 (기본 체크됨)
             loadExactMatchData(function() {
                 polygons.exact.forEach(function(p) { p.setMap(map); });
+                markers.exact.forEach(function(m) { m.setMap(map); });
             });
         });
     };
