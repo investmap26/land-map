@@ -1503,7 +1503,7 @@ function loadExactMatchData(callback) {
     if (exactLoaded) { if(callback) callback(); return; }
     console.log("완전일치 데이터 로딩 (토지목록좌표 기반)...");
 
-    fetch("data_exact_polygons.json?v=202601031700")
+    fetch("data_exact_polygons.json?v=202601031800")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
