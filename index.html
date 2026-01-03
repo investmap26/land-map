@@ -2218,7 +2218,7 @@ function toggleLayer(category) {
 function setMapType(type) {
     var mapTypes = {
         'roadmap': kakao.maps.MapTypeId.ROADMAP,
-        'skyview': kakao.maps.MapTypeId.SKYVIEW
+        'skyview': kakao.maps.MapTypeId.HYBRID  // HYBRID = 스카이뷰 + 지명/도로 표시
     };
     map.setMapTypeId(mapTypes[type]);
     document.querySelectorAll('.map-type-btn').forEach(function(btn) {
