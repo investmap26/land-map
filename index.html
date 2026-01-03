@@ -623,9 +623,23 @@
                 <span class="layer-count">361</span>
             </label>
             <label class="layer-item">
-                <input type="checkbox" id="layer-auction" onchange="toggleLayer('auction')">
+                <input type="checkbox" id="layer-inside" onchange="toggleLayer('inside')">
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #ef4444; color: #ef4444;"></div>
+                <span class="layer-name">지구내</span>
+                <span class="layer-count" id="count-inside">0</span>
+            </label>
+            <label class="layer-item">
+                <input type="checkbox" id="layer-nearby" onchange="toggleLayer('nearby')">
+                <div class="toggle"></div>
+                <div class="layer-color" style="background: #f97316; color: #f97316;"></div>
+                <span class="layer-name">지구인근</span>
+                <span class="layer-count" id="count-nearby">0</span>
+            </label>
+            <label class="layer-item">
+                <input type="checkbox" id="layer-auction" onchange="toggleLayer('auction')">
+                <div class="toggle"></div>
+                <div class="layer-color" style="background: #6366f1; color: #6366f1;"></div>
                 <span class="layer-name">경매</span>
                 <span class="layer-count" id="count-auction">0</span>
             </label>
@@ -1923,23 +1937,23 @@ function init() {
         markers.development.push(m);
     });
 
-    // 지구내 (정확 매칭) - 빨간색 강조
+    // 지구내 (정확 매칭) - 빨간색 강조 (처음엔 숨김)
     DATA_inside.forEach(function(d) {
-        var m = createMarker(d.lat, d.lng, COLORS.inside, 'inside');
+        var m = createMarkerNoMap(d.lat, d.lng, COLORS.inside, 'inside');
         var info = createAuctionInfo(d, '지구내');
         addClickEvent(m, info, d);
         markers.inside.push(m); auctionDataByMarker.set(m, d);
-        m.setMap(map);
     });
+    document.getElementById('count-inside').textContent = markers.inside.length.toLocaleString();
 
-    // 지구인근
+    // 지구인근 (처음엔 숨김)
     DATA_nearby.forEach(function(d) {
-        var m = createMarker(d.lat, d.lng, COLORS.nearby, 'auction');
+        var m = createMarkerNoMap(d.lat, d.lng, COLORS.nearby, 'nearby');
         var info = createAuctionInfo(d, '지구인근');
         addClickEvent(m, info, d);
         markers.nearby.push(m); auctionDataByMarker.set(m, d);
-        m.setMap(map);
     });
+    document.getElementById('count-nearby').textContent = markers.nearby.length.toLocaleString();
 
     // 경매 데이터 로드
     fetch("data_auction.json?v=202601031500")
