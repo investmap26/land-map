@@ -2146,7 +2146,6 @@ function toggleLayer(category) {
     if (category === 'nearby500' && show && !nearby500Loaded) {
         loadNearby500Data(function() {
             polygons.nearby500.forEach(function(p) { p.setMap(map); });
-            markers.nearby500.forEach(function(m) { m.setMap(map); });
         });
         return;
     }
@@ -2154,7 +2153,6 @@ function toggleLayer(category) {
     if (category === 'nearby1km' && show && !nearby1kmLoaded) {
         loadNearby1kmData(function() {
             polygons.nearby1km.forEach(function(p) { p.setMap(map); });
-            markers.nearby1km.forEach(function(m) { m.setMap(map); });
         });
         return;
     }
@@ -2166,12 +2164,10 @@ function toggleLayer(category) {
     }
     if (category === 'nearby500' && nearby500Loaded) {
         polygons.nearby500.forEach(function(p) { p.setMap(show ? map : null); });
-        markers.nearby500.forEach(function(m) { m.setMap(show ? map : null); });
         return;
     }
     if (category === 'nearby1km' && nearby1kmLoaded) {
         polygons.nearby1km.forEach(function(p) { p.setMap(show ? map : null); });
-        markers.nearby1km.forEach(function(m) { m.setMap(show ? map : null); });
         return;
     }
 
