@@ -2370,7 +2370,8 @@ function handleSearchKeyup(e) {
 }
 
 function performSearch() {
-    var query = document.getElementById('search-input').value.trim().toLowerCase();
+    var query = document.getElementById('search-input').value.trim();
+    var queryLower = query.toLowerCase();
     var resultsDiv = document.getElementById('search-results');
 
     if (query.length < 2) {
@@ -2378,23 +2379,46 @@ function performSearch() {
         return;
     }
 
+    // 1. 내부 데이터에서 검색
     var results = allSearchableItems.filter(function(item) {
-        return (item.name && item.name.toLowerCase().includes(query)) ||
-               (item.address && item.address.toLowerCase().includes(query));
-    }).slice(0, 10);
+        return (item.name && item.name.toLowerCase().includes(queryLower)) ||
+               (item.address && item.address.toLowerCase().includes(queryLower));
+    }).slice(0, 8);
 
-    if (results.length === 0) {
-        resultsDiv.innerHTML = '<div class="search-result-item"><div class="search-result-name">검색 결과가 없습니다</div></div>';
-    } else {
-        resultsDiv.innerHTML = results.map(function(r) {
-            return '<div class="search-result-item" onclick="goToLocation(' + r.lat + ',' + r.lng + ',\'' +
-                   r.name.replace(/'/g, "\\'") + '\')">' +
-                   '<div class="search-result-name"><span class="search-result-cat">' + r.category + '</span>' +
-                   r.name + '</div>' +
-                   '<div class="search-result-addr">' + (r.address || '') + '</div></div>';
-        }).join('');
-    }
-    resultsDiv.classList.add('active');
+    // 2. 카카오 주소 검색 추가
+    var geocoder = new kakao.maps.services.Geocoder();
+    geocoder.addressSearch(query, function(geoResults, status) {
+        var html = '';
+
+        // 내부 검색 결과
+        if (results.length > 0) {
+            html += results.map(function(r) {
+                return '<div class="search-result-item" onclick="goToLocation(' + r.lat + ',' + r.lng + ',\'' +
+                       r.name.replace(/'/g, "\\'") + '\')">' +
+                       '<div class="search-result-name"><span class="search-result-cat">' + r.category + '</span>' +
+                       r.name + '</div>' +
+                       '<div class="search-result-addr">' + (r.address || '') + '</div></div>';
+            }).join('');
+        }
+
+        // 카카오 주소 검색 결과
+        if (status === kakao.maps.services.Status.OK && geoResults.length > 0) {
+            html += geoResults.slice(0, 5).map(function(r) {
+                return '<div class="search-result-item" onclick="goToLocation(' + r.y + ',' + r.x + ',\'' +
+                       r.address_name.replace(/'/g, "\\'") + '\')">' +
+                       '<div class="search-result-name"><span class="search-result-cat" style="background:#10b981">주소</span>' +
+                       r.address_name + '</div>' +
+                       '<div class="search-result-addr">' + (r.road_address ? r.road_address.address_name : '') + '</div></div>';
+            }).join('');
+        }
+
+        if (html === '') {
+            html = '<div class="search-result-item"><div class="search-result-name">검색 결과가 없습니다</div></div>';
+        }
+
+        resultsDiv.innerHTML = html;
+        resultsDiv.classList.add('active');
+    });
 }
 
 function goToLocation(lat, lng, name) {
