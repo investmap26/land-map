@@ -1677,7 +1677,7 @@ function loadNearby1kmData(callback) {
 function loadAuctionData(callback) {
     if (auctionLoaded) { callback(); return; }
     console.log("경매 데이터 로딩...");
-    fetch("data_auction.json")
+    fetch("data_auction.json?v=20260105")
         .then(function(r) { return r.json(); })
         .then(function(data) {
             console.log("경매 데이터 로드 완료:", data.length);
@@ -1720,7 +1720,7 @@ function loadAuctionData(callback) {
 function loadPublicData(callback) {
     if (publicLoaded) { callback(); return; }
     console.log("공매 데이터 로딩...");
-    fetch("data_public.json")
+    fetch("data_public.json?v=20260105")
         .then(function(r) { return r.json(); })
         .then(function(data) {
             console.log("공매 데이터 로드 완료:", data.length);
