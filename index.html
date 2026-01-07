@@ -1468,6 +1468,7 @@ var COLORS = {
 };
 
 var map, curPoly = null;
+var kakaoLoaded = false;
 var markers = {
     railway: [], highway: [], ic: [], development: [],
     exact: [], nearby500: [], nearby1km: [], land: [],
@@ -2139,6 +2140,10 @@ function showParcel(lat, lng, address, areaInfo) {
 }
 
 function toggleLayer(category) {
+    if (!kakaoLoaded) {
+        console.log('카카오맵 SDK 로딩 중... 잠시 후 다시 시도해주세요.');
+        return;
+    }
     var chk = document.getElementById('layer-' + category);
     var show = chk.checked;
     console.log('toggleLayer:', category, 'show:', show, 'markers:', markers[category] ? markers[category].length : 0);
@@ -2764,6 +2769,7 @@ function initRoadview() {
     s.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=7e60f6a42602355b925c66ea6db3bd87&libraries=services,clusterer&autoload=false';
     s.onload = function() {
         kakao.maps.load(function() {
+            kakaoLoaded = true;
             init();
             initRoadview();
             initSearchData();
@@ -2773,6 +2779,10 @@ function initRoadview() {
                 markers.exact.forEach(function(m) { m.setMap(map); });
             });
         });
+    };
+    s.onerror = function() {
+        console.error('카카오맵 SDK 로드 실패. 네트워크 연결 또는 API 키를 확인하세요.');
+        alert('지도 로드 실패: 카카오맵 SDK를 불러올 수 없습니다.\n네트워크 연결을 확인해주세요.');
     };
     document.head.appendChild(s);
 })();
