@@ -495,12 +495,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            display: none;
+            visibility: hidden;
             z-index: 99999;
             background: #000;
         }
         #roadview.active {
-            display: block !important;
             visibility: visible !important;
         }
         .roadview-close {
@@ -1854,7 +1853,9 @@ function init() {
                 }
 
                 // 로드뷰 컨테이너 표시
-                document.getElementById('roadview').classList.add('active');
+                var rvContainer = document.getElementById('roadview');
+                rvContainer.style.display = 'block';
+                rvContainer.classList.add('active');
                 document.querySelector('.roadview-close').classList.add('active');
 
                 // 로드뷰 이동
@@ -2364,7 +2365,9 @@ function showRoadview(lat, lng) {
         }
 
         // 로드뷰 컨테이너 표시
-        document.getElementById('roadview').classList.add('active');
+        var rvContainer = document.getElementById('roadview');
+        rvContainer.style.display = 'block';
+        rvContainer.classList.add('active');
         document.querySelector('.roadview-close').classList.add('active');
 
         // 로드뷰 이동
@@ -2374,7 +2377,9 @@ function showRoadview(lat, lng) {
 
 // 로드뷰 닫기
 function closeRoadview() {
-    document.getElementById('roadview').classList.remove('active');
+    var rvContainer = document.getElementById('roadview');
+    rvContainer.classList.remove('active');
+    rvContainer.style.display = 'none';
     document.querySelector('.roadview-close').classList.remove('active');
 }
 
