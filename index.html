@@ -327,14 +327,14 @@
 
         /* 관심 목록 토글 버튼 */
         .favorites-toggle {
-            position: absolute; bottom: 20px; left: 20px;
+            position: absolute; bottom: 80px; left: 20px;
             background: rgba(12, 12, 16, 0.95);
             backdrop-filter: blur(24px);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             padding: 12px 18px;
             color: #fff; font-size: 12px;
-            cursor: pointer; z-index: 99;
+            cursor: pointer; z-index: 150;
             display: flex; align-items: center; gap: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             transition: all 0.2s;
@@ -525,6 +525,287 @@
             background: rgba(99,102,241,0.8);
         }
         .roadview-close.active { display: block; }
+        /* 거리 측정 스타일 */
+        .measure-result {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(12, 12, 16, 0.95);
+            backdrop-filter: blur(24px);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: #fff;
+            font-family: 'Pretendard', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+        .measure-result.active { display: block; }
+        .measure-result .distance-value {
+            color: #10b981;
+            font-size: 18px;
+            margin-left: 8px;
+        }
+        .measure-result .close-btn {
+            margin-left: 16px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .measure-result .close-btn:hover { color: #fff; }
+        /* 플로팅 도구모음 */
+        .floating-tools {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: rgba(12, 12, 16, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 8px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .tool-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tool-btn:hover {
+            background: rgba(99,102,241,0.3);
+            color: #fff;
+        }
+        .tool-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(16,185,129,0.4);
+        }
+        .tool-btn[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            right: 56px;
+            background: rgba(0,0,0,0.9);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+        }
+        .tool-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+            margin: 4px 0;
+        }
+
+        /* 관심물건 패널 (카테고리 관리) */
+        .bookmark-panel {
+            position: absolute;
+            top: 100px;
+            left: 24px;
+            background: rgba(12, 12, 16, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 16px;
+            min-width: 280px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            z-index: 180;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .bookmark-panel.active { display: block; }
+        .bookmark-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .bookmark-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bookmark-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .bookmark-close:hover { color: #fff; }
+        .bookmark-category {
+            margin-bottom: 12px;
+        }
+        .bookmark-category-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 6px;
+        }
+        .bookmark-category-header:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .bookmark-category-icon {
+            font-size: 14px;
+        }
+        .bookmark-category-name {
+            flex: 1;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+        }
+        .bookmark-category-count {
+            font-size: 10px;
+            background: rgba(99,102,241,0.3);
+            padding: 2px 6px;
+            border-radius: 10px;
+            color: #a5b4fc;
+        }
+        .bookmark-items {
+            padding-left: 12px;
+        }
+        .bookmark-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .bookmark-item:hover {
+            background: rgba(99,102,241,0.15);
+            border-color: rgba(99,102,241,0.3);
+        }
+        .bookmark-item-info {
+            flex: 1;
+        }
+        .bookmark-item-name {
+            font-size: 11px;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .bookmark-item-addr {
+            font-size: 9px;
+            color: rgba(255,255,255,0.4);
+        }
+        .bookmark-item-remove {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.3);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px;
+        }
+        .bookmark-item-remove:hover { color: #ef4444; }
+        .bookmark-empty {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+        }
+        .bookmark-add-category {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .bookmark-add-input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 11px;
+        }
+        .bookmark-add-btn {
+            padding: 8px 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* 측정 결과 패널 개선 */
+        .measure-info {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(12, 12, 16, 0.95);
+            backdrop-filter: blur(24px);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: #fff;
+            font-size: 13px;
+            z-index: 300;
+            display: none;
+            box-shadow: 0 8px 32px rgba(16,185,129,0.3);
+            text-align: center;
+        }
+        .measure-info.active { display: block; }
+        .measure-info .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #10b981;
+            margin: 8px 0;
+        }
+        .measure-info .hint {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+        }
+        .measure-info .close-measure {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .map-type-btn.measure-active {
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: #fff !important;
+        }
+
     </style>
 </head>
 <body>
@@ -537,6 +818,13 @@
         <button class="map-type-btn" onclick="setMapType('skyview')">스카이뷰</button>
         <button class="map-type-btn" onclick="toggleCadastral()">지적도</button>
         <button class="map-type-btn" onclick="toggleRoadviewMode()">로드뷰</button>
+        <button class="map-type-btn" id="measure-btn" onclick="toggleMeasureMode()">거리</button>
+    </div>
+
+    <!-- 거리 측정 결과 표시 -->
+    <div id="measure-result" class="measure-result">
+        📏 거리: <span id="measure-distance" class="distance-value">0m</span>
+        <button class="close-btn" onclick="clearMeasure()">✕</button>
     </div>
 
     <div class="search-panel">
@@ -578,6 +866,38 @@
                 <span class="parcel-info-value" id="parcel-addr">-</span>
             </div>
         </div>
+    </div>
+
+    
+    <!-- 플로팅 도구모음 -->
+    <div class="floating-tools">
+        <button class="tool-btn" id="tool-distance" onclick="startDistanceMeasure()" title="거리 측정">📏</button>
+        <button class="tool-btn" id="tool-radius" onclick="startRadiusMeasure()" title="반경 측정">⭕</button>
+        <div class="tool-divider"></div>
+        <button class="tool-btn" id="tool-bookmark" onclick="toggleBookmarkPanel()" title="관심물건">📌</button>
+        <button class="tool-btn" id="tool-clear" onclick="clearAllMeasures()" title="측정 초기화">🗑️</button>
+    </div>
+
+    <!-- 관심물건 패널 -->
+    <div class="bookmark-panel" id="bookmark-panel">
+        <div class="bookmark-header">
+            <span class="bookmark-title">📌 관심물건</span>
+            <button class="bookmark-close" onclick="toggleBookmarkPanel()">✕</button>
+        </div>
+        <div id="bookmark-content">
+            <div class="bookmark-empty">등록된 관심물건이 없습니다<br><small>마커 클릭 후 ⭐ 버튼으로 추가하세요</small></div>
+        </div>
+        <div class="bookmark-add-category">
+            <input type="text" class="bookmark-add-input" id="new-category-input" placeholder="새 카테고리 이름">
+            <button class="bookmark-add-btn" onclick="addBookmarkCategory()">추가</button>
+        </div>
+    </div>
+
+    <!-- 측정 결과 표시 -->
+    <div class="measure-info" id="measure-info">
+        <button class="close-measure" onclick="closeMeasureInfo()">✕</button>
+        <div class="hint" id="measure-hint">시작점을 클릭하세요</div>
+        <div class="value" id="measure-value">-</div>
     </div>
 
     <div class="zoom-control">
@@ -1841,6 +2161,11 @@ function init() {
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
 
+        // 도구 모드 체크 (거리/반경 측정)
+        if (handleToolClick(mouseEvent.latLng)) {
+            return;
+        }
+
         // 로드뷰 모드일 때
         if (roadviewModeEnabled) {
             var position = mouseEvent.latLng;
@@ -2848,11 +3173,404 @@ function initRoadview() {
     var s = document.createElement('script');
     s.src = 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=8b690a323c7c77c4eac24c91d9b3b57a&libraries=services,clusterer&autoload=false';
     s.onload = function() {
-        kakao.maps.load(function() {
+        
+// ====== 거리 측정 기능 ======
+var measureModeEnabled = false;
+var measureStartMarker = null;
+var measureEndMarker = null;
+var measureLine = null;
+var measureClickCount = 0;
+
+function toggleMeasureMode() {
+    measureModeEnabled = !measureModeEnabled;
+    var btn = document.getElementById('measure-btn');
+
+    if (measureModeEnabled) {
+        btn.classList.add('measure-active');
+        clearMeasure(); // 기존 측정 초기화
+        measureClickCount = 0;
+        // 안내 표시
+        document.getElementById('measure-result').classList.add('active');
+        document.getElementById('measure-distance').textContent = '시작점을 클릭하세요';
+    } else {
+        btn.classList.remove('measure-active');
+        clearMeasure();
+    }
+}
+
+function handleMeasureClick(latLng) {
+    if (!measureModeEnabled) return false;
+
+    measureClickCount++;
+
+    if (measureClickCount === 1) {
+        // 첫 번째 클릭: 시작점
+        measureStartMarker = new kakao.maps.Marker({
+            position: latLng,
+            map: map,
+            image: new kakao.maps.MarkerImage(
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
+                new kakao.maps.Size(50, 45),
+                { offset: new kakao.maps.Point(15, 43) }
+            )
+        });
+        document.getElementById('measure-distance').textContent = '끝점을 클릭하세요';
+    } else if (measureClickCount === 2) {
+        // 두 번째 클릭: 끝점
+        measureEndMarker = new kakao.maps.Marker({
+            position: latLng,
+            map: map,
+            image: new kakao.maps.MarkerImage(
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png',
+                new kakao.maps.Size(50, 45),
+                { offset: new kakao.maps.Point(15, 43) }
+            )
+        });
+
+        // 선 그리기
+        var path = [measureStartMarker.getPosition(), latLng];
+        measureLine = new kakao.maps.Polyline({
+            path: path,
+            strokeWeight: 4,
+            strokeColor: '#10b981',
+            strokeOpacity: 0.9,
+            strokeStyle: 'solid'
+        });
+        measureLine.setMap(map);
+
+        // 거리 계산
+        var startPos = measureStartMarker.getPosition();
+        var distanceKm = haversine(startPos.getLat(), startPos.getLng(), latLng.getLat(), latLng.getLng());
+        var distanceM = distanceKm * 1000;
+
+        // 결과 표시
+        var distanceText;
+        if (distanceM >= 1000) {
+            distanceText = distanceKm.toFixed(2) + 'km';
+        } else {
+            distanceText = Math.round(distanceM) + 'm';
+        }
+        document.getElementById('measure-distance').textContent = distanceText;
+
+        // 측정 모드 종료 (다시 클릭하면 새로 측정)
+        measureModeEnabled = false;
+        document.getElementById('measure-btn').classList.remove('measure-active');
+    }
+
+    return true; // 이벤트 처리됨
+}
+
+function clearMeasure() {
+    if (measureStartMarker) {
+        measureStartMarker.setMap(null);
+        measureStartMarker = null;
+    }
+    if (measureEndMarker) {
+        measureEndMarker.setMap(null);
+        measureEndMarker = null;
+    }
+    if (measureLine) {
+        measureLine.setMap(null);
+        measureLine = null;
+    }
+    measureClickCount = 0;
+    document.getElementById('measure-result').classList.remove('active');
+}
+
+
+// ====== 플로팅 도구모음 기능 ======
+var currentTool = null; // 'distance', 'radius', null
+var measurePoints = [];
+var measureMarkers = [];
+var measureShapes = []; // polylines, circles
+var radiusCircle = null;
+
+function startDistanceMeasure() {
+    if (currentTool === 'distance') {
+        cancelMeasure();
+        return;
+    }
+    cancelMeasure();
+    currentTool = 'distance';
+    measurePoints = [];
+    document.getElementById('tool-distance').classList.add('active');
+    document.getElementById('measure-info').classList.add('active');
+    document.getElementById('measure-hint').textContent = '시작점을 클릭하세요';
+    document.getElementById('measure-value').textContent = '-';
+}
+
+function startRadiusMeasure() {
+    if (currentTool === 'radius') {
+        cancelMeasure();
+        return;
+    }
+    cancelMeasure();
+    currentTool = 'radius';
+    measurePoints = [];
+    document.getElementById('tool-radius').classList.add('active');
+    document.getElementById('measure-info').classList.add('active');
+    document.getElementById('measure-hint').textContent = '중심점을 클릭하세요';
+    document.getElementById('measure-value').textContent = '-';
+}
+
+function handleToolClick(latLng) {
+    if (!currentTool) return false;
+
+    if (currentTool === 'distance') {
+        measurePoints.push(latLng);
+
+        // 마커 추가
+        var markerImg = measurePoints.length === 1 ?
+            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png' :
+            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png';
+        var marker = new kakao.maps.Marker({
+            position: latLng,
+            map: map,
+            image: new kakao.maps.MarkerImage(markerImg, new kakao.maps.Size(50, 45), {offset: new kakao.maps.Point(15, 43)})
+        });
+        measureMarkers.push(marker);
+
+        if (measurePoints.length === 1) {
+            document.getElementById('measure-hint').textContent = '끝점을 클릭하세요';
+        } else if (measurePoints.length === 2) {
+            // 선 그리기
+            var line = new kakao.maps.Polyline({
+                path: measurePoints,
+                strokeWeight: 4,
+                strokeColor: '#10b981',
+                strokeOpacity: 0.9,
+                strokeStyle: 'solid'
+            });
+            line.setMap(map);
+            measureShapes.push(line);
+
+            // 거리 계산
+            var p1 = measurePoints[0], p2 = measurePoints[1];
+            var distKm = haversine(p1.getLat(), p1.getLng(), p2.getLat(), p2.getLng());
+            var distM = distKm * 1000;
+            document.getElementById('measure-hint').textContent = '거리';
+            document.getElementById('measure-value').textContent = distM >= 1000 ? distKm.toFixed(2) + ' km' : Math.round(distM) + ' m';
+
+            // 도구 비활성화
+            document.getElementById('tool-distance').classList.remove('active');
+            currentTool = null;
+        }
+        return true;
+    }
+
+    if (currentTool === 'radius') {
+        measurePoints.push(latLng);
+
+        if (measurePoints.length === 1) {
+            // 중심점 마커
+            var centerMarker = new kakao.maps.Marker({
+                position: latLng,
+                map: map,
+                image: new kakao.maps.MarkerImage(
+                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
+                    new kakao.maps.Size(50, 45),
+                    {offset: new kakao.maps.Point(15, 43)}
+                )
+            });
+            measureMarkers.push(centerMarker);
+            document.getElementById('measure-hint').textContent = '반경 끝점을 클릭하세요';
+        } else if (measurePoints.length === 2) {
+            // 반경 계산
+            var center = measurePoints[0], edge = measurePoints[1];
+            var radiusKm = haversine(center.getLat(), center.getLng(), edge.getLat(), edge.getLng());
+            var radiusM = radiusKm * 1000;
+
+            // 원 그리기
+            var circle = new kakao.maps.Circle({
+                center: center,
+                radius: radiusM,
+                strokeWeight: 3,
+                strokeColor: '#f59e0b',
+                strokeOpacity: 0.8,
+                strokeStyle: 'solid',
+                fillColor: '#f59e0b',
+                fillOpacity: 0.15
+            });
+            circle.setMap(map);
+            measureShapes.push(circle);
+
+            // 끝점 마커
+            var edgeMarker = new kakao.maps.Marker({
+                position: edge,
+                map: map,
+                image: new kakao.maps.MarkerImage(
+                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png',
+                    new kakao.maps.Size(50, 45),
+                    {offset: new kakao.maps.Point(15, 43)}
+                )
+            });
+            measureMarkers.push(edgeMarker);
+
+            document.getElementById('measure-hint').textContent = '반경';
+            document.getElementById('measure-value').textContent = radiusM >= 1000 ? radiusKm.toFixed(2) + ' km' : Math.round(radiusM) + ' m';
+
+            document.getElementById('tool-radius').classList.remove('active');
+            currentTool = null;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+function cancelMeasure() {
+    currentTool = null;
+    measurePoints = [];
+    document.getElementById('tool-distance').classList.remove('active');
+    document.getElementById('tool-radius').classList.remove('active');
+    document.getElementById('measure-info').classList.remove('active');
+}
+
+function closeMeasureInfo() {
+    document.getElementById('measure-info').classList.remove('active');
+}
+
+function clearAllMeasures() {
+    cancelMeasure();
+    measureMarkers.forEach(function(m) { m.setMap(null); });
+    measureShapes.forEach(function(s) { s.setMap(null); });
+    measureMarkers = [];
+    measureShapes = [];
+    document.getElementById('measure-info').classList.remove('active');
+}
+
+// ====== 관심물건 패널 ======
+var bookmarkCategories = {};
+
+function loadBookmarks() {
+    try {
+        var saved = localStorage.getItem('investment-map-bookmarks');
+        if (saved) bookmarkCategories = JSON.parse(saved);
+    } catch(e) {}
+    if (!bookmarkCategories['기본']) {
+        bookmarkCategories['기본'] = [];
+    }
+    updateBookmarkUI();
+}
+
+function saveBookmarks() {
+    try {
+        localStorage.setItem('investment-map-bookmarks', JSON.stringify(bookmarkCategories));
+    } catch(e) {}
+}
+
+function toggleBookmarkPanel() {
+    var panel = document.getElementById('bookmark-panel');
+    panel.classList.toggle('active');
+    document.getElementById('tool-bookmark').classList.toggle('active', panel.classList.contains('active'));
+}
+
+function addBookmarkCategory() {
+    var input = document.getElementById('new-category-input');
+    var name = input.value.trim();
+    if (!name) return;
+    if (bookmarkCategories[name]) {
+        alert('이미 존재하는 카테고리입니다.');
+        return;
+    }
+    bookmarkCategories[name] = [];
+    saveBookmarks();
+    updateBookmarkUI();
+    input.value = '';
+}
+
+function addToBookmark(name, address, lat, lng, category) {
+    category = category || '기본';
+    if (!bookmarkCategories[category]) {
+        bookmarkCategories[category] = [];
+    }
+    // 중복 체크
+    var exists = bookmarkCategories[category].some(function(b) {
+        return b.lat === lat && b.lng === lng;
+    });
+    if (exists) {
+        alert('이미 등록된 물건입니다.');
+        return;
+    }
+    bookmarkCategories[category].push({
+        name: name,
+        address: address,
+        lat: lat,
+        lng: lng,
+        addedAt: new Date().toISOString()
+    });
+    saveBookmarks();
+    updateBookmarkUI();
+    alert('관심물건에 추가되었습니다.');
+}
+
+function removeFromBookmark(category, index) {
+    bookmarkCategories[category].splice(index, 1);
+    saveBookmarks();
+    updateBookmarkUI();
+}
+
+function removeCategory(category) {
+    if (category === '기본') {
+        alert('기본 카테고리는 삭제할 수 없습니다.');
+        return;
+    }
+    if (!confirm('"' + category + '" 카테고리를 삭제하시겠습니까?')) return;
+    delete bookmarkCategories[category];
+    saveBookmarks();
+    updateBookmarkUI();
+}
+
+function updateBookmarkUI() {
+    var container = document.getElementById('bookmark-content');
+    var categories = Object.keys(bookmarkCategories);
+    var totalCount = 0;
+    categories.forEach(function(c) { totalCount += bookmarkCategories[c].length; });
+
+    if (totalCount === 0 && categories.length <= 1) {
+        container.innerHTML = '<div class="bookmark-empty">등록된 관심물건이 없습니다<br><small>마커 클릭 후 ⭐ 버튼으로 추가하세요</small></div>';
+        return;
+    }
+
+    var html = '';
+    categories.forEach(function(cat) {
+        var items = bookmarkCategories[cat];
+        var icon = cat === '기본' ? '📁' : '📂';
+        html += '<div class="bookmark-category">';
+        html += '<div class="bookmark-category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">';
+        html += '<span class="bookmark-category-icon">' + icon + '</span>';
+        html += '<span class="bookmark-category-name">' + cat + '</span>';
+        html += '<span class="bookmark-category-count">' + items.length + '</span>';
+        if (cat !== '기본') {
+            html += '<button onclick="event.stopPropagation();removeCategory('' + cat.replace(/'/g, "\'") + '')" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:12px;margin-left:4px;">✕</button>';
+        }
+        html += '</div>';
+        html += '<div class="bookmark-items">';
+        items.forEach(function(item, idx) {
+            html += '<div class="bookmark-item" onclick="goToLocation(' + item.lat + ',' + item.lng + ','' + item.name.replace(/'/g, "\'") + '')">';
+            html += '<div class="bookmark-item-info">';
+            html += '<div class="bookmark-item-name">' + item.name + '</div>';
+            html += '<div class="bookmark-item-addr">' + (item.address || '') + '</div>';
+            html += '</div>';
+            html += '<button class="bookmark-item-remove" onclick="event.stopPropagation();removeFromBookmark('' + cat.replace(/'/g, "\'") + '',' + idx + ')">✕</button>';
+            html += '</div>';
+        });
+        html += '</div></div>';
+    });
+    container.innerHTML = html;
+}
+
+// 전역 함수 등록
+window.addToBookmark = addToBookmark;
+window.toggleBookmarkPanel = toggleBookmarkPanel;
+
+
+kakao.maps.load(function() {
             init();
             initRoadview();
             initSearchData();
             loadFavorites();
+            loadBookmarks();
             // 완전일치 데이터 자동 로드 (기본 체크됨 - 마커만 사용)
             loadExactMatchData(function() {
                 markers.exact.forEach(function(m) { m.setMap(map); });
