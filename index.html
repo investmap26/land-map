@@ -489,41 +489,42 @@
         .zoom-btn:hover { background: rgba(99,102,241,0.3); color: #fff; }
         .zoom-btn:first-child { border-bottom: 1px solid rgba(255,255,255,0.08); }
 
-        /* 로드뷰 스타일 */
+        /* 로드뷰 스타일 - 반반 화면 */
         #roadview {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 50vw;
+            height: 100vh;
             visibility: hidden;
             z-index: 99999;
             background: #000;
+            border-right: 3px solid #3b82f6;
         }
         #roadview.active {
             visibility: visible !important;
         }
         .roadview-close {
             position: fixed;
-            top: 80px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(12, 12, 16, 0.95);
-            backdrop-filter: blur(24px);
+            top: 20px;
+            left: 20px;
+            background: rgba(12, 12, 16, 0.9);
+            backdrop-filter: blur(16px);
             border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
-            padding: 12px 24px;
+            border-radius: 8px;
+            padding: 8px 16px;
             color: #fff;
             font-family: 'Pretendard', sans-serif;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
             z-index: 9999999;
             display: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
             transition: all 0.2s ease;
         }
         .roadview-close:hover {
-            background: rgba(99,102,241,0.8);
+            background: rgba(239,68,68,0.8);
         }
         .roadview-close.active { display: block; }
         
@@ -2148,14 +2149,28 @@ function init() {
                     return;
                 }
 
-                // 로드뷰 컨테이너 표시
+                // 로드뷰 컨테이너 표시 (왼쪽 50%)
                 var rvContainer = document.getElementById('roadview');
-                rvContainer.style.cssText = 'display:block !important; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:999999;';
+                rvContainer.style.cssText = 'display:block !important; position:fixed; top:0; left:0; width:50vw; height:100vh; z-index:99999; border-right:3px solid #3b82f6;';
                 rvContainer.classList.add('active');
                 document.querySelector('.roadview-close').classList.add('active');
 
                 // 로드뷰 이동
                 roadview.setPanoId(panoId, position);
+
+                // 지도에 로드뷰 위치 마커 표시
+                if (roadviewPositionMarker) {
+                    roadviewPositionMarker.setMap(null);
+                }
+                roadviewPositionMarker = new kakao.maps.Marker({
+                    position: position,
+                    map: map,
+                    image: new kakao.maps.MarkerImage(
+                        'https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png',
+                        new kakao.maps.Size(26, 46),
+                        { offset: new kakao.maps.Point(13, 46) }
+                    )
+                });
             });
             return;
         }
@@ -2677,6 +2692,12 @@ function closeRoadview() {
     rvContainer.classList.remove('active');
     rvContainer.style.display = 'none';
     document.querySelector('.roadview-close').classList.remove('active');
+
+    // 로드뷰 위치 마커 제거
+    if (roadviewPositionMarker) {
+        roadviewPositionMarker.setMap(null);
+        roadviewPositionMarker = null;
+    }
 }
 
 // InfoWindow onclick에서 사용하기 위해 window 객체에 할당
