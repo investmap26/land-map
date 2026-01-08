@@ -527,6 +527,40 @@
             background: rgba(239,68,68,0.8);
         }
         .roadview-close.active { display: block; }
+        /* 로드뷰 위치 마커 + 방향 표시 */
+        .rv-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+        }
+        .rv-marker-center {
+            width: 16px;
+            height: 16px;
+            background: #3b82f6;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+        }
+        .rv-marker-arrow {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 20px solid #3b82f6;
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            transform-origin: center bottom;
+            z-index: 1;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+
         
         /* 플로팅 도구모음 */
         .floating-tools {
@@ -2155,23 +2189,14 @@ function init() {
                 rvContainer.classList.add('active');
                 document.querySelector('.roadview-close').classList.add('active');
 
-                // 로드뷰 이동
+                // 로드뷰 이동 (position_changed 이벤트가 발생하여 마커가 자동으로 생성됨)
                 window.roadview.setPanoId(panoId, position);
 
-                // 지도에 로드뷰 위치 마커 표시 (빨간 마커)
-                if (window.roadviewPositionMarker) {
-                    window.roadviewPositionMarker.setMap(null);
+                // 마커 오버레이 생성
+                if (window.createRvMarker) {
+                    window.createRvMarker(position);
                 }
-                window.roadviewPositionMarker = new kakao.maps.Marker({
-                    position: position,
-                    map: map,
-                    image: new kakao.maps.MarkerImage(
-                        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
-                        new kakao.maps.Size(50, 45),
-                        { offset: new kakao.maps.Point(15, 43) }
-                    )
-                });
-                console.log('로드뷰 모드 마커 생성');
+                console.log('[로드뷰모드] 마커 생성됨');
             });
             return;
         }
@@ -2722,11 +2747,19 @@ function closeRoadview() {
     rvContainer.style.display = 'none';
     document.querySelector('.roadview-close').classList.remove('active');
 
-    // 로드뷰 위치 마커 제거
+    // 마커 오버레이 제거
+    if (window.rvMarkerOverlay) {
+        window.rvMarkerOverlay.setMap(null);
+        window.rvMarkerOverlay = null;
+    }
+
+    // 기존 마커 제거
     if (window.roadviewPositionMarker) {
         window.roadviewPositionMarker.setMap(null);
         window.roadviewPositionMarker = null;
     }
+
+    console.log('[closeRoadview] 로드뷰 닫힘');
 }
 
 // InfoWindow onclick에서 사용하기 위해 window 객체에 할당
@@ -3630,40 +3663,68 @@ window.toggleBookmarkPanel = toggleBookmarkPanel;
 kakao.maps.load(function() {
             init();
 
-            // 로드뷰 초기화 (여기서 정의해야 kakao.maps 객체 사용 가능)
+            // 로드뷰 초기화 - 카카오맵 공식처럼 완벽 연동
             (function initRoadview() {
                 var rvContainer = document.getElementById('roadview');
                 window.roadview = new kakao.maps.Roadview(rvContainer);
                 window.roadviewClient = new kakao.maps.RoadviewClient();
+                window.rvMarkerOverlay = null;
+                window.rvViewpointAngle = 0;
                 console.log('[initRoadview] 로드뷰 초기화 완료');
 
-                // 로드뷰 위치 변경 시 마커도 따라가기
+                // 로드뷰 마커 오버레이 생성 함수
+                window.createRvMarker = function(position) {
+                    if (window.rvMarkerOverlay) {
+                        window.rvMarkerOverlay.setMap(null);
+                    }
+                    var markerHtml = '<div class="rv-marker">' +
+                        '<div class="rv-marker-arrow" id="rv-arrow"></div>' +
+                        '<div class="rv-marker-center"></div>' +
+                        '</div>';
+                    window.rvMarkerOverlay = new kakao.maps.CustomOverlay({
+                        position: position,
+                        content: markerHtml,
+                        yAnchor: 0.5,
+                        xAnchor: 0.5,
+                        zIndex: 10
+                    });
+                    window.rvMarkerOverlay.setMap(map);
+                    console.log('[createRvMarker] 마커 오버레이 생성됨');
+                };
+
+                // 마커 방향 회전 함수
+                window.updateRvArrow = function(angle) {
+                    var arrow = document.getElementById('rv-arrow');
+                    if (arrow) {
+                        arrow.style.transform = 'translateX(-50%) rotate(' + angle + 'deg)';
+                    }
+                };
+
+                // 로드뷰 위치 변경 이벤트
                 kakao.maps.event.addListener(window.roadview, 'position_changed', function() {
                     var position = window.roadview.getPosition();
-                    console.log('[position_changed] 이벤트 발생! lat:', position.getLat(), 'lng:', position.getLng());
+                    console.log('[position_changed] 위치:', position.getLat().toFixed(6), position.getLng().toFixed(6));
 
-                    // 마커 업데이트
-                    if (window.roadviewPositionMarker) {
-                        window.roadviewPositionMarker.setPosition(position);
-                        console.log('[position_changed] 마커 위치 업데이트됨');
+                    // 마커 위치 업데이트
+                    if (window.rvMarkerOverlay) {
+                        window.rvMarkerOverlay.setPosition(position);
                     } else {
-                        console.log('[position_changed] 마커 없음, 새로 생성');
-                        window.roadviewPositionMarker = new kakao.maps.Marker({
-                            position: position,
-                            map: map,
-                            image: new kakao.maps.MarkerImage(
-                                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
-                                new kakao.maps.Size(50, 45),
-                                { offset: new kakao.maps.Point(15, 43) }
-                            )
-                        });
+                        window.createRvMarker(position);
                     }
 
-                    // 지도 중심 이동
+                    // 지도 중심 이동 (줌 레벨은 유지)
                     map.setCenter(position);
-                    console.log('[position_changed] 지도 중심 이동됨');
                 });
-                console.log('[initRoadview] position_changed 리스너 등록 완료');
+
+                // 로드뷰 시점(viewpoint) 변경 이벤트 - 방향 회전
+                kakao.maps.event.addListener(window.roadview, 'viewpoint_changed', function() {
+                    var viewpoint = window.roadview.getViewpoint();
+                    window.rvViewpointAngle = viewpoint.pan;
+                    window.updateRvArrow(viewpoint.pan);
+                    console.log('[viewpoint_changed] 방향:', viewpoint.pan.toFixed(1) + '°');
+                });
+
+                console.log('[initRoadview] 모든 이벤트 리스너 등록 완료');
             })();
             initSearchData();
             loadFavorites();
