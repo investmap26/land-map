@@ -2705,9 +2705,10 @@ function showRoadview(lat, lng) {
 
         // 로드뷰 컨테이너 표시 (왼쪽 50%)
         var rvContainer = document.getElementById('roadview');
-        rvContainer.style.cssText = 'display:block !important; position:fixed; top:0; left:0; width:50vw; height:100vh; z-index:99999; border-right:3px solid #3b82f6;';
+        rvContainer.style.cssText = 'display:block !important; visibility:visible !important; position:fixed; top:0; left:0; width:50vw; height:100vh; z-index:99999; border-right:3px solid #3b82f6;';
         rvContainer.classList.add('active');
         document.querySelector('.roadview-close').classList.add('active');
+        console.log('[showRoadview] 컨테이너 표시됨, 크기:', rvContainer.offsetWidth, 'x', rvContainer.offsetHeight);
 
         // 지도에 빨간 마커 표시
         if (window.roadviewPositionMarker) {
