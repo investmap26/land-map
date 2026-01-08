@@ -3158,6 +3158,15 @@ function initRoadview() {
     var rvContainer = document.getElementById('roadview');
     roadview = new kakao.maps.Roadview(rvContainer);
     roadviewClient = new kakao.maps.RoadviewClient();
+
+    // 로드뷰 위치 변경 시 마커도 따라가기
+    kakao.maps.event.addListener(roadview, 'position_changed', function() {
+        var position = roadview.getPosition();
+        if (roadviewPositionMarker) {
+            roadviewPositionMarker.setPosition(position);
+            map.setCenter(position);
+        }
+    });
 }
 </script>
 <script>
