@@ -2329,29 +2329,45 @@ function toggleRoadviewMode() {
 
 // 로드뷰 표시
 function showRoadview(lat, lng) {
-    // 초기화 확인
-    if (!roadviewClient || !roadview) {
-        var rvContainer = document.getElementById('roadview');
-        roadview = new kakao.maps.Roadview(rvContainer);
-        roadviewClient = new kakao.maps.RoadviewClient();
-    }
+    console.log('showRoadview 호출:', lat, lng);
 
-    var position = new kakao.maps.LatLng(lat, lng);
-
-    // 가장 가까운 로드뷰 위치 찾기 (반경 100m)
-    roadviewClient.getNearestPanoId(position, 100, function(panoId) {
-        if (panoId === null) {
-            alert('이 위치에는 로드뷰가 없습니다.');
-            return;
+    try {
+        // 초기화 확인
+        if (!roadviewClient || !roadview) {
+            console.log('로드뷰 초기화 시작');
+            var rvContainer = document.getElementById('roadview');
+            if (!rvContainer) {
+                alert('로드뷰 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+            roadview = new kakao.maps.Roadview(rvContainer);
+            roadviewClient = new kakao.maps.RoadviewClient();
+            console.log('로드뷰 초기화 완료');
         }
 
-        // 로드뷰 컨테이너 표시
-        document.getElementById('roadview').classList.add('active');
-        document.querySelector('.roadview-close').classList.add('active');
+        var position = new kakao.maps.LatLng(lat, lng);
+        console.log('위치 생성:', position);
 
-        // 로드뷰 이동
-        roadview.setPanoId(panoId, position);
-    });
+        // 가장 가까운 로드뷰 위치 찾기 (반경 100m)
+        roadviewClient.getNearestPanoId(position, 100, function(panoId) {
+            console.log('panoId:', panoId);
+            if (panoId === null) {
+                alert('이 위치에는 로드뷰가 없습니다.');
+                return;
+            }
+
+            // 로드뷰 컨테이너 표시
+            document.getElementById('roadview').classList.add('active');
+            document.querySelector('.roadview-close').classList.add('active');
+
+            // 로드뷰 이동
+            roadview.setPanoId(panoId, position);
+            console.log('로드뷰 표시 완료');
+        });
+    } catch(e) {
+        console.error('로드뷰 에러:', e);
+        alert('로드뷰 에러: ' + e.message);
+    }
 }
 
 // 로드뷰 닫기
