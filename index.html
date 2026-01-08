@@ -2420,25 +2420,30 @@ function performSearch() {
     // 2. 카카오 주소 검색 + 경공매 검색
     var geocoder = new kakao.maps.services.Geocoder();
 
-    // 경공매 검색 함수
+    // 경공매 검색 함수 (주소 + 사건번호)
     function searchAuction(callback) {
+        function filterAuction(data) {
+            return data.filter(function(d) {
+                var matchAddr = d.address && d.address.toLowerCase().includes(queryLower);
+                var matchCase = d.case_no && d.case_no.toLowerCase().includes(queryLower);
+                return matchAddr || matchCase;
+            }).slice(0, 10);
+        }
+
         if (auctionSearchCache) {
-            var auctionResults = auctionSearchCache.filter(function(d) {
-                return d.address && d.address.toLowerCase().includes(queryLower);
-            }).slice(0, 5);
-            callback(auctionResults);
+            callback(filterAuction(auctionSearchCache));
         } else {
-            // 첫 검색 시 데이터 로드
-            fetch("data_auction.json?v=20260105")
-                .then(function(r) { return r.json(); })
-                .then(function(data) {
-                    auctionSearchCache = data;
-                    var auctionResults = data.filter(function(d) {
-                        return d.address && d.address.toLowerCase().includes(queryLower);
-                    }).slice(0, 5);
-                    callback(auctionResults);
-                })
-                .catch(function() { callback([]); });
+            // 첫 검색 시 경매+공매 데이터 로드
+            Promise.all([
+                fetch("data_auction.json?v=20260108").then(function(r) { return r.json(); }),
+                fetch("data_public.json?v=20260108").then(function(r) { return r.json(); })
+            ]).then(function(results) {
+                // 경매와 공매 데이터 합치기
+                var auctionData = results[0].map(function(d) { d.auction_type = '경매'; return d; });
+                var publicData = results[1].map(function(d) { d.auction_type = '공매'; return d; });
+                auctionSearchCache = auctionData.concat(publicData);
+                callback(filterAuction(auctionSearchCache));
+            }).catch(function() { callback([]); });
         }
     }
 
@@ -2461,11 +2466,13 @@ function performSearch() {
             if (auctionResults.length > 0) {
                 html += auctionResults.map(function(d) {
                     var priceText = d.min_price ? (d.min_price / 10000).toLocaleString() + '만원' : '';
+                    var typeColor = d.auction_type === '공매' ? '#f59e0b' : '#6366f1';
+                    var typeLabel = d.auction_type || '경매';
                     return '<div class="search-result-item" onclick="goToAuction(' + d.lat + ',' + d.lng + ',\'' +
-                           d.address.replace(/'/g, "\\'") + '\',\'' + (d.case_no || '').replace(/'/g, "\\'") + '\',\'' +
-                           priceText.replace(/'/g, "\\'") + '\')">' +
-                           '<div class="search-result-name"><span class="search-result-cat" style="background:#6366f1">경매</span>' +
-                           d.address.substring(0, 30) + '</div>' +
+                           (d.address || '').replace(/'/g, "\\'") + '\',\'' + (d.case_no || '').replace(/'/g, "\\'") + '\',\'' +
+                           priceText.replace(/'/g, "\\'") + '\',\'' + typeLabel + '\')">' +
+                           '<div class="search-result-name"><span class="search-result-cat" style="background:' + typeColor + '">' + typeLabel + '</span>' +
+                           (d.address || '').substring(0, 30) + '</div>' +
                            '<div class="search-result-addr">' + (d.case_no || '') + ' | ' + priceText + '</div></div>';
                 }).join('');
             }
@@ -2491,21 +2498,23 @@ function performSearch() {
     });
 }
 
-function goToAuction(lat, lng, address, caseNo, price) {
+function goToAuction(lat, lng, address, caseNo, price, auctionType) {
     map.setCenter(new kakao.maps.LatLng(lat, lng));
     map.setLevel(3);
     document.getElementById('search-results').classList.remove('active');
-    document.getElementById('search-input').value = address;
+    document.getElementById('search-input').value = caseNo || address;
 
-    // 경매 물건 위치에 임시 마커 표시
+    // 경공매 물건 위치에 임시 마커 표시
     var marker = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(lat, lng),
         map: map
     });
 
     // 인포윈도우 표시
+    var typeLabel = auctionType || '경매';
+    var typeColor = typeLabel === '공매' ? '#f59e0b' : '#6366f1';
     var content = '<div style="padding:10px;font-size:12px;min-width:200px;">' +
-                  '<strong style="color:#6366f1;">경매</strong><br>' +
+                  '<strong style="color:' + typeColor + ';">' + typeLabel + '</strong><br>' +
                   '<div style="margin-top:5px;">' + address + '</div>' +
                   (caseNo ? '<div style="color:#666;margin-top:3px;">' + caseNo + '</div>' : '') +
                   (price ? '<div style="color:#ef4444;font-weight:bold;margin-top:3px;">' + price + '</div>' : '') +
@@ -2523,11 +2532,51 @@ function goToAuction(lat, lng, address, caseNo, price) {
     }, 10000);
 }
 
+var searchMarker = null;
+var searchInfowindow = null;
+
 function goToLocation(lat, lng, name) {
     map.setCenter(new kakao.maps.LatLng(lat, lng));
     map.setLevel(3);
     document.getElementById('search-results').classList.remove('active');
     document.getElementById('search-input').value = name;
+
+    // 이전 마커 제거
+    if (searchMarker) {
+        searchMarker.setMap(null);
+    }
+    if (searchInfowindow) {
+        searchInfowindow.close();
+    }
+
+    // 검색 위치에 마커 표시
+    searchMarker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(lat, lng),
+        map: map
+    });
+
+    // 인포윈도우 표시
+    var content = '<div style="padding:10px;font-size:12px;min-width:150px;">' +
+                  '<strong>' + name + '</strong>' +
+                  '</div>';
+
+    searchInfowindow = new kakao.maps.InfoWindow({
+        content: content,
+        removable: true
+    });
+    searchInfowindow.open(map, searchMarker);
+
+    // 30초 후 마커 제거
+    setTimeout(function() {
+        if (searchMarker) {
+            searchMarker.setMap(null);
+            searchMarker = null;
+        }
+        if (searchInfowindow) {
+            searchInfowindow.close();
+            searchInfowindow = null;
+        }
+    }, 30000);
 }
 
 // 검색 결과 외부 클릭 시 닫기
