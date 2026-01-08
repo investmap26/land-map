@@ -327,23 +327,24 @@
 
         /* 관심 목록 토글 버튼 */
         .favorites-toggle {
-            position: absolute; bottom: 80px; left: 20px;
-            background: rgba(12, 12, 16, 0.95);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 12px 18px;
-            color: #fff; font-size: 12px;
+            position: absolute; bottom: 70px; left: 12px;
+            background: rgba(18, 18, 22, 0.9);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: rgba(255,255,255,0.8); font-size: 10px;
             cursor: pointer; z-index: 150;
-            display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
             transition: all 0.2s;
         }
-        .favorites-toggle:hover { background: rgba(99,102,241,0.3); }
+        .favorites-toggle:hover { background: rgba(99,102,241,0.2); color: #fff; }
         .favorites-count {
             background: #ef4444;
-            padding: 2px 6px; border-radius: 10px;
-            font-size: 10px; font-weight: 600;
+            padding: 1px 5px; border-radius: 8px;
+            font-size: 9px; font-weight: 600;
+            min-width: 14px; text-align: center;
         }
 
         .stats-panel {
@@ -525,66 +526,33 @@
             background: rgba(99,102,241,0.8);
         }
         .roadview-close.active { display: block; }
-        /* 거리 측정 스타일 */
-        .measure-result {
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(12, 12, 16, 0.95);
-            backdrop-filter: blur(24px);
-            border: 2px solid #10b981;
-            border-radius: 12px;
-            padding: 12px 24px;
-            color: #fff;
-            font-family: 'Pretendard', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 9999;
-            display: none;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
-        }
-        .measure-result.active { display: block; }
-        .measure-result .distance-value {
-            color: #10b981;
-            font-size: 18px;
-            margin-left: 8px;
-        }
-        .measure-result .close-btn {
-            margin-left: 16px;
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.5);
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .measure-result .close-btn:hover { color: #fff; }
+        
         /* 플로팅 도구모음 */
         .floating-tools {
             position: absolute;
             top: 50%;
-            right: 20px;
+            right: 12px;
             transform: translateY(-50%);
-            background: rgba(12, 12, 16, 0.95);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            padding: 8px;
+            background: rgba(12, 12, 16, 0.9);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 4px;
             z-index: 200;
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            gap: 2px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
         }
         .tool-btn {
-            width: 44px;
-            height: 44px;
+            width: 28px;
+            height: 28px;
             border: none;
             background: rgba(255,255,255,0.05);
             color: rgba(255,255,255,0.7);
-            font-size: 18px;
+            font-size: 12px;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 6px;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
@@ -597,23 +565,23 @@
         .tool-btn.active {
             background: linear-gradient(135deg, #10b981, #059669);
             color: #fff;
-            box-shadow: 0 0 12px rgba(16,185,129,0.4);
+            box-shadow: 0 0 8px rgba(16,185,129,0.3);
         }
         .tool-btn[title]:hover::after {
             content: attr(title);
             position: absolute;
-            right: 56px;
+            right: 36px;
             background: rgba(0,0,0,0.9);
             color: #fff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9px;
             white-space: nowrap;
         }
         .tool-divider {
             height: 1px;
-            background: rgba(255,255,255,0.1);
-            margin: 4px 0;
+            background: rgba(255,255,255,0.08);
+            margin: 2px 0;
         }
 
         /* 관심물건 패널 (카테고리 관리) */
@@ -764,41 +732,41 @@
         /* 측정 결과 패널 개선 */
         .measure-info {
             position: absolute;
-            bottom: 100px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(12, 12, 16, 0.95);
-            backdrop-filter: blur(24px);
-            border: 2px solid #10b981;
-            border-radius: 12px;
-            padding: 14px 20px;
+            background: rgba(12, 12, 16, 0.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 8px 14px;
             color: #fff;
-            font-size: 13px;
+            font-size: 11px;
             z-index: 300;
             display: none;
-            box-shadow: 0 8px 32px rgba(16,185,129,0.3);
+            box-shadow: 0 4px 16px rgba(16,185,129,0.2);
             text-align: center;
         }
         .measure-info.active { display: block; }
         .measure-info .value {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 600;
             color: #10b981;
-            margin: 8px 0;
+            margin: 4px 0;
         }
         .measure-info .hint {
-            font-size: 11px;
+            font-size: 9px;
             color: rgba(255,255,255,0.5);
         }
         .measure-info .close-measure {
             position: absolute;
-            top: 8px;
-            right: 10px;
+            top: 4px;
+            right: 6px;
             background: none;
             border: none;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255,255,255,0.4);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .map-type-btn.measure-active {
@@ -818,14 +786,7 @@
         <button class="map-type-btn" onclick="setMapType('skyview')">스카이뷰</button>
         <button class="map-type-btn" onclick="toggleCadastral()">지적도</button>
         <button class="map-type-btn" onclick="toggleRoadviewMode()">로드뷰</button>
-        <button class="map-type-btn" id="measure-btn" onclick="toggleMeasureMode()">거리</button>
-    </div>
-
-    <!-- 거리 측정 결과 표시 -->
-    <div id="measure-result" class="measure-result">
-        📏 거리: <span id="measure-distance" class="distance-value">0m</span>
-        <button class="close-btn" onclick="clearMeasure()">✕</button>
-    </div>
+        </div>
 
     <div class="search-panel">
         <input type="text" class="search-input" id="search-input"
