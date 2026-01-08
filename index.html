@@ -1835,7 +1835,6 @@ function init() {
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
-        if (roadviewModeEnabled) { showRoadview(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng()); return; }
         // 검색 마커/인포윈도우 제거
         if (typeof clearSearchMarker === 'function') {
             clearSearchMarker();
@@ -2305,7 +2304,7 @@ function toggleRoadviewMode() {
 
     if (roadviewModeEnabled) {
         // 로드뷰 모드 활성화
-        btns[3].classList.add('active');
+        btns[2].classList.add('active');
         btns[0].classList.remove('active');
         btns[1].classList.remove('active');
 
@@ -2318,7 +2317,7 @@ function toggleRoadviewMode() {
         alert('지도를 클릭하면 해당 위치의 로드뷰가 표시됩니다.');
     } else {
         // 로드뷰 모드 비활성화
-        btns[3].classList.remove('active');
+        btns[2].classList.remove('active');
         btns[0].classList.add('active');
 
         if (roadviewClickListener) {
@@ -2330,15 +2329,10 @@ function toggleRoadviewMode() {
 
 // 로드뷰 표시
 function showRoadview(lat, lng) {
-    // 초기화 확인
-    if (!roadviewClient || !roadview) {
-        initRoadview();
-    }
-
     var position = new kakao.maps.LatLng(lat, lng);
 
-    // 가장 가까운 로드뷰 위치 찾기 (반경 100m로 확대)
-    roadviewClient.getNearestPanoId(position, 100, function(panoId) {
+    // 가장 가까운 로드뷰 위치 찾기
+    roadviewClient.getNearestPanoId(position, 50, function(panoId) {
         if (panoId === null) {
             alert('이 위치에는 로드뷰가 없습니다.');
             return;
@@ -2549,7 +2543,6 @@ function goToAuction(lat, lng, address, caseNo, price, auctionType) {
                   '<div style="margin-top:5px;">' + address + '</div>' +
                   (caseNo ? '<div style="color:#666;margin-top:3px;">' + caseNo + '</div>' : '') +
                   (price ? '<div style="color:#ef4444;font-weight:bold;margin-top:3px;">' + price + '</div>' : '') +
-                  '<button onclick="showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>' +
                   '</div>';
 
     searchInfowindow = new kakao.maps.InfoWindow({
@@ -2577,7 +2570,6 @@ function goToLocation(lat, lng, name) {
     var content = '<div style="padding:10px;font-size:12px;min-width:150px;position:relative;">' +
                   '<button onclick="clearSearchMarker()" style="position:absolute;top:5px;right:5px;background:none;border:none;font-size:16px;cursor:pointer;color:#999;">&times;</button>' +
                   '<strong>' + name + '</strong>' +
-                  '<br><button onclick="showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>' +
                   '</div>';
 
     searchInfowindow = new kakao.maps.InfoWindow({
