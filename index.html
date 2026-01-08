@@ -2348,11 +2348,11 @@ function showRoadview(lat, lng) {
         var position = new kakao.maps.LatLng(lat, lng);
         console.log('위치 생성:', position);
 
-        // 가장 가까운 로드뷰 위치 찾기 (반경 100m)
-        roadviewClient.getNearestPanoId(position, 100, function(panoId) {
+        // 가장 가까운 로드뷰 위치 찾기 (반경 500m)
+        roadviewClient.getNearestPanoId(position, 500, function(panoId) {
             console.log('panoId:', panoId);
             if (panoId === null) {
-                alert('이 위치에는 로드뷰가 없습니다.');
+                alert('이 위치 500m 내에 로드뷰가 없습니다.');
                 return;
             }
 
