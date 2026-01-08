@@ -2712,7 +2712,28 @@ function showRoadview(lat, lng) {
         rvContainer.classList.add('active');
         document.querySelector('.roadview-close').classList.add('active');
 
-        // 지도에 로드뷰 위치 마커 표시 (빨간 마커)
+        // 이벤트 리스너 먼저 등록 (setPanoId 이전에!)
+        if (!roadviewEventsRegistered) {
+            kakao.maps.event.addListener(roadview, 'position_changed', function() {
+                var rvPos = roadview.getPosition();
+                console.log('[position_changed] 이동:', rvPos.getLat(), rvPos.getLng());
+
+                if (window.roadviewPositionMarker) {
+                    window.roadviewPositionMarker.setPosition(rvPos);
+                    console.log('[position_changed] 마커 업데이트됨');
+                }
+                map.setCenter(rvPos);
+            });
+
+            kakao.maps.event.addListener(roadview, 'viewpoint_changed', function() {
+                console.log('[viewpoint_changed] 방향:', roadview.getViewpoint().pan);
+            });
+
+            roadviewEventsRegistered = true;
+            console.log('[showRoadview] 이벤트 리스너 등록 완료');
+        }
+
+        // 지도에 빨간 마커 표시
         if (window.roadviewPositionMarker) {
             window.roadviewPositionMarker.setMap(null);
         }
@@ -2727,35 +2748,9 @@ function showRoadview(lat, lng) {
         });
         console.log('[showRoadview] 마커 생성됨');
 
-        // 로드뷰 이동
+        // 로드뷰 이동 (이벤트 등록 후에!)
         roadview.setPanoId(panoId, position);
 
-        // 이벤트 리스너 등록 (최초 1회만)
-        if (!roadviewEventsRegistered) {
-            // 위치 변경 이벤트
-            kakao.maps.event.addListener(roadview, 'position_changed', function() {
-                var rvPosition = roadview.getPosition();
-                console.log('[position_changed] 이동:', rvPosition.getLat(), rvPosition.getLng());
-
-                // 마커 위치 업데이트
-                if (window.roadviewPositionMarker) {
-                    window.roadviewPositionMarker.setPosition(rvPosition);
-                }
-                // 지도 중심 이동
-                map.setCenter(rvPosition);
-            });
-
-            // 시점 변경 이벤트
-            kakao.maps.event.addListener(roadview, 'viewpoint_changed', function() {
-                var viewpoint = roadview.getViewpoint();
-                console.log('[viewpoint_changed] 방향:', viewpoint.pan);
-            });
-
-            roadviewEventsRegistered = true;
-            console.log('[showRoadview] 이벤트 리스너 등록 완료');
-        }
-
-        // 지도 중심 이동
         map.setCenter(position);
         console.log('[showRoadview] 완료');
     });
