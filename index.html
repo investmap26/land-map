@@ -2182,6 +2182,7 @@ function init() {
         center: new kakao.maps.LatLng(36.5, 127.5),
         level: 13
     });
+    window.map = map; // 전역 접근용
 
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
@@ -3723,17 +3724,19 @@ kakao.maps.load(function() {
                 // 로드뷰 위치 변경 이벤트
                 kakao.maps.event.addListener(window.roadview, 'position_changed', function() {
                     var position = window.roadview.getPosition();
-                    console.log('로드뷰 이동:', position.getLat(), position.getLng());
+                    console.log('[position_changed] 로드뷰 이동:', position.getLat(), position.getLng());
+                    console.log('[position_changed] 마커 존재:', !!window.roadviewPositionMarker);
+                    console.log('[position_changed] 지도 존재:', !!map);
 
                     // 마커 위치 업데이트
                     if (window.roadviewPositionMarker) {
                         window.roadviewPositionMarker.setPosition(position);
+                        console.log('[position_changed] 마커 위치 업데이트 완료');
                     }
 
                     // 지도 중심 이동
-                    if (window.map) {
-                        window.map.setCenter(position);
-                    }
+                    map.setCenter(position);
+                    console.log('[position_changed] 지도 중심 이동 완료');
                 });
 
                 // 로드뷰 시점(viewpoint) 변경 이벤트 - 방향 회전
