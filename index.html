@@ -2708,7 +2708,6 @@ function showRoadview(lat, lng) {
         rvContainer.style.cssText = 'display:block !important; visibility:visible !important; position:fixed; top:0; left:0; width:50vw; height:100vh; z-index:99999; border-right:3px solid #3b82f6;';
         rvContainer.classList.add('active');
         document.querySelector('.roadview-close').classList.add('active');
-        console.log('[showRoadview] 컨테이너 표시됨, 크기:', rvContainer.offsetWidth, 'x', rvContainer.offsetHeight);
 
         // 지도에 빨간 마커 표시
         if (window.roadviewPositionMarker) {
@@ -2723,16 +2722,31 @@ function showRoadview(lat, lng) {
                 { offset: new kakao.maps.Point(15, 43) }
             )
         });
-        console.log('[showRoadview] 마커 생성됨');
 
-        // 컨테이너 렌더링 후 로드뷰 설정
+        // 로드뷰 객체 새로 생성 (컨테이너가 보이는 상태에서)
         setTimeout(function() {
-            roadview.relayout();
+            // 기존 로드뷰 내용 제거
+            rvContainer.innerHTML = '';
+
+            // 새 로드뷰 객체 생성
+            roadview = new kakao.maps.Roadview(rvContainer);
+            window.roadview = roadview;
+
+            // 이벤트 리스너 등록
+            kakao.maps.event.addListener(roadview, 'position_changed', function() {
+                var pos = roadview.getPosition();
+                console.log('[RV] position_changed:', pos.getLat(), pos.getLng());
+                if (window.roadviewPositionMarker) {
+                    window.roadviewPositionMarker.setPosition(pos);
+                }
+                map.setCenter(pos);
+            });
+
+            // 로드뷰 이동
             roadview.setPanoId(panoId, position);
             map.setCenter(position);
-            map.relayout();
-            console.log('[showRoadview] 완료 (relayout 적용)');
-        }, 100);
+            console.log('[showRoadview] 새 로드뷰 객체 생성 및 이동 완료');
+        }, 50);
     });
 }
 
@@ -3659,46 +3673,10 @@ window.toggleBookmarkPanel = toggleBookmarkPanel;
 kakao.maps.load(function() {
             init();
 
-            // 로드뷰 초기화
-            (function initRoadview() {
-                var rvContainer = document.getElementById('roadview');
-                roadview = new kakao.maps.Roadview(rvContainer);
-                window.roadview = roadview;
-                roadviewClient = new kakao.maps.RoadviewClient();
-                window.roadviewClient = roadviewClient;
-
-                // 이벤트 방식
-                kakao.maps.event.addListener(roadview, 'position_changed', function() {
-                    var pos = roadview.getPosition();
-                    console.log('>>> EVENT position_changed:', pos.getLat(), pos.getLng());
-                    if (window.roadviewPositionMarker) {
-                        window.roadviewPositionMarker.setPosition(pos);
-                    }
-                    if (map) {
-                        map.setCenter(pos);
-                    }
-                });
-
-                // 폴링 방식 (백업) - 200ms마다 위치 체크
-                var lastLat = 0, lastLng = 0;
-                setInterval(function() {
-                    if (!roadview || !window.roadviewPositionMarker) return;
-                    try {
-                        var pos = roadview.getPosition();
-                        if (!pos) return;
-                        var lat = pos.getLat(), lng = pos.getLng();
-                        if (lat !== lastLat || lng !== lastLng) {
-                            console.log('>>> POLL 위치변경:', lat, lng);
-                            window.roadviewPositionMarker.setPosition(pos);
-                            map.setCenter(pos);
-                            lastLat = lat;
-                            lastLng = lng;
-                        }
-                    } catch(e) {}
-                }, 200);
-
-                console.log('[initRoadview] 로드뷰 초기화 완료 (이벤트+폴링)');
-            })();
+            // 로드뷰 클라이언트만 초기화 (로드뷰 객체는 showRoadview에서 생성)
+            roadviewClient = new kakao.maps.RoadviewClient();
+            window.roadviewClient = roadviewClient;
+            console.log('[init] 로드뷰 클라이언트 초기화 완료');
             initSearchData();
             loadFavorites();
             loadBookmarks();
