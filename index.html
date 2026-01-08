@@ -1848,7 +1848,7 @@ function init() {
             // 가장 가까운 로드뷰 panoId 찾기
             roadviewClient.getNearestPanoId(position, 50, function(panoId) {
                 if (panoId === null) {
-                    alert('이 위치에는 로드뷰가 없습니다.');
+                    
                     return;
                 }
 
@@ -2360,7 +2360,7 @@ function showRoadview(lat, lng) {
     // 가장 가까운 로드뷰 위치 찾기 (반경 1000m)
     roadviewClient.getNearestPanoId(position, 1000, function(panoId) {
         if (panoId === null) {
-            alert('이 위치 1km 내에 로드뷰가 없습니다.');
+            
             return;
         }
 
