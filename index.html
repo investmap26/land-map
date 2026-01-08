@@ -2305,9 +2305,7 @@ function toggleRoadviewMode() {
 
     if (roadviewModeEnabled) {
         // 로드뷰 모드 활성화
-        btns[2].classList.add('active');
-        btns[0].classList.remove('active');
-        btns[1].classList.remove('active');
+        btns[3].classList.add('active');
 
         // 클릭 이벤트 추가
         roadviewClickListener = kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
@@ -2318,8 +2316,7 @@ function toggleRoadviewMode() {
         alert('지도를 클릭하면 해당 위치의 로드뷰가 표시됩니다.');
     } else {
         // 로드뷰 모드 비활성화
-        btns[2].classList.remove('active');
-        btns[0].classList.add('active');
+        btns[3].classList.remove('active');
 
         if (roadviewClickListener) {
             kakao.maps.event.removeListener(roadviewClickListener);
