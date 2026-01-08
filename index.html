@@ -3536,28 +3536,59 @@ function updateBookmarkUI() {
     categories.forEach(function(cat) {
         var items = bookmarkCategories[cat];
         var icon = cat === '기본' ? '📁' : '📂';
+        var catEsc = cat.replace(/'/g, "\\'");
         html += '<div class="bookmark-category">';
-        html += '<div class="bookmark-category-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">';
+        html += '<div class="bookmark-category-header" data-cat="' + cat + '">';
         html += '<span class="bookmark-category-icon">' + icon + '</span>';
         html += '<span class="bookmark-category-name">' + cat + '</span>';
         html += '<span class="bookmark-category-count">' + items.length + '</span>';
         if (cat !== '기본') {
-            html += '<button onclick="event.stopPropagation();removeCategory('' + cat.replace(/'/g, "\'") + '')" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:12px;margin-left:4px;">✕</button>';
+            html += '<button class="cat-remove-btn" data-cat="' + cat + '" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:12px;margin-left:4px;">✕</button>';
         }
         html += '</div>';
-        html += '<div class="bookmark-items">';
+        html += '<div class="bookmark-items" style="display:block;">';
         items.forEach(function(item, idx) {
-            html += '<div class="bookmark-item" onclick="goToLocation(' + item.lat + ',' + item.lng + ','' + item.name.replace(/'/g, "\'") + '')">';
+            html += '<div class="bookmark-item" data-lat="' + item.lat + '" data-lng="' + item.lng + '" data-name="' + item.name.replace(/"/g, '&quot;') + '">';
             html += '<div class="bookmark-item-info">';
             html += '<div class="bookmark-item-name">' + item.name + '</div>';
             html += '<div class="bookmark-item-addr">' + (item.address || '') + '</div>';
             html += '</div>';
-            html += '<button class="bookmark-item-remove" onclick="event.stopPropagation();removeFromBookmark('' + cat.replace(/'/g, "\'") + '',' + idx + ')">✕</button>';
+            html += '<button class="bookmark-item-remove" data-cat="' + cat + '" data-idx="' + idx + '">✕</button>';
             html += '</div>';
         });
         html += '</div></div>';
     });
     container.innerHTML = html;
+
+    // 이벤트 위임으로 클릭 처리
+    container.onclick = function(e) {
+        var target = e.target;
+        // 카테고리 헤더 클릭 - 접기/펼치기
+        if (target.classList.contains('bookmark-category-header') || target.closest('.bookmark-category-header')) {
+            var header = target.closest('.bookmark-category-header');
+            if (header && !target.classList.contains('cat-remove-btn')) {
+                var items = header.nextElementSibling;
+                items.style.display = items.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+        // 카테고리 삭제 버튼
+        if (target.classList.contains('cat-remove-btn')) {
+            e.stopPropagation();
+            removeCategory(target.dataset.cat);
+        }
+        // 북마크 아이템 클릭
+        if (target.classList.contains('bookmark-item') || (target.closest('.bookmark-item') && !target.classList.contains('bookmark-item-remove'))) {
+            var item = target.closest('.bookmark-item');
+            if (item) {
+                goToLocation(parseFloat(item.dataset.lat), parseFloat(item.dataset.lng), item.dataset.name);
+            }
+        }
+        // 북마크 삭제 버튼
+        if (target.classList.contains('bookmark-item-remove')) {
+            e.stopPropagation();
+            removeFromBookmark(target.dataset.cat, parseInt(target.dataset.idx));
+        }
+    };
 }
 
 // 전역 함수 등록
