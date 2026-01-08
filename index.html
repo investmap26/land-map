@@ -2709,6 +2709,12 @@ function showRoadview(lat, lng) {
         rvContainer.classList.add('active');
         document.querySelector('.roadview-close').classList.add('active');
 
+        // 지도를 오른쪽 50%로 이동
+        var mapContainer = document.getElementById('map');
+        mapContainer.style.cssText = 'position:fixed; top:0; right:0; width:50vw; height:100vh;';
+        map.relayout();
+        console.log('[showRoadview] 지도 오른쪽 50%로 이동');
+
         // 로드뷰 객체 새로 생성 (컨테이너가 보이는 상태에서)
         setTimeout(function() {
             // 기존 로드뷰 내용 제거
@@ -2767,6 +2773,11 @@ function closeRoadview() {
     rvContainer.style.display = 'none';
     document.querySelector('.roadview-close').classList.remove('active');
 
+    // 지도를 원래 크기로 복원
+    var mapContainer = document.getElementById('map');
+    mapContainer.style.cssText = 'width:100vw; height:100vh;';
+    map.relayout();
+
     // 마커 오버레이 제거
     if (window.rvMarkerOverlay) {
         window.rvMarkerOverlay.setMap(null);
@@ -2779,7 +2790,7 @@ function closeRoadview() {
         window.roadviewPositionMarker = null;
     }
 
-    console.log('[closeRoadview] 로드뷰 닫힘');
+    console.log('[closeRoadview] 로드뷰 닫힘, 지도 복원');
 }
 
 // InfoWindow onclick에서 사용하기 위해 window 객체에 할당
