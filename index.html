@@ -2736,10 +2736,19 @@ function showRoadview(lat, lng) {
             kakao.maps.event.addListener(roadview, 'position_changed', function() {
                 var pos = roadview.getPosition();
                 console.log('[RV] position_changed:', pos.getLat(), pos.getLng());
+                console.log('[RV] 마커 존재:', !!window.roadviewPositionMarker);
+                console.log('[RV] 마커 지도:', window.roadviewPositionMarker ? window.roadviewPositionMarker.getMap() : 'null');
+                console.log('[RV] 지도 중심 이동 전:', map.getCenter().getLat(), map.getCenter().getLng());
+
                 if (window.roadviewPositionMarker) {
                     window.roadviewPositionMarker.setPosition(pos);
+                    console.log('[RV] 마커 setPosition 완료');
+                } else {
+                    console.log('[RV] 마커가 없음!');
                 }
+
                 map.setCenter(pos);
+                console.log('[RV] 지도 중심 이동 후:', map.getCenter().getLat(), map.getCenter().getLng());
             });
 
             // 로드뷰 이동
