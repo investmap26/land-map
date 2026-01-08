@@ -1846,22 +1846,11 @@ function init() {
         if (roadviewModeEnabled) {
             var position = mouseEvent.latLng;
 
-            // roadviewClient 초기화
-            if (!roadviewClient) {
-                roadviewClient = new kakao.maps.RoadviewClient();
-            }
-
             // 가장 가까운 로드뷰 panoId 찾기
             roadviewClient.getNearestPanoId(position, 50, function(panoId) {
                 if (panoId === null) {
                     alert('이 위치에는 로드뷰가 없습니다.');
                     return;
-                }
-
-                // roadview 초기화
-                if (!roadview) {
-                    var rvContainer = document.getElementById('roadview');
-                    roadview = new kakao.maps.Roadview(rvContainer);
                 }
 
                 // 로드뷰 컨테이너 표시
@@ -2365,55 +2354,22 @@ function toggleRoadviewMode() {
 
 // 로드뷰 표시
 function showRoadview(lat, lng) {
-    console.log('showRoadview 호출:', lat, lng);
-    console.log('현재 roadview:', roadview);
-    console.log('현재 roadviewClient:', roadviewClient);
+    var position = new kakao.maps.LatLng(lat, lng);
 
-    try {
-        // 초기화 확인
-        if (!roadviewClient || !roadview) {
-            console.log('로드뷰 초기화 시작');
-            var rvContainer = document.getElementById('roadview');
-            console.log('로드뷰 컨테이너:', rvContainer);
-            if (!rvContainer) {
-                alert('로드뷰 컨테이너를 찾을 수 없습니다.');
-                return;
-            }
-            roadview = new kakao.maps.Roadview(rvContainer);
-            console.log('Roadview 생성됨:', roadview);
-            roadviewClient = new kakao.maps.RoadviewClient();
-            console.log('RoadviewClient 생성됨:', roadviewClient);
-            console.log('로드뷰 초기화 완료');
+    // 가장 가까운 로드뷰 위치 찾기 (반경 1000m)
+    roadviewClient.getNearestPanoId(position, 1000, function(panoId) {
+        if (panoId === null) {
+            alert('이 위치 1km 내에 로드뷰가 없습니다.');
+            return;
         }
 
-        var position = new kakao.maps.LatLng(lat, lng);
-        console.log('위치 생성:', position);
-        console.log('lat:', lat, 'lng:', lng);
+        // 로드뷰 컨테이너 표시
+        document.getElementById('roadview').classList.add('active');
+        document.querySelector('.roadview-close').classList.add('active');
 
-        // 가장 가까운 로드뷰 위치 찾기 (반경 1000m)
-        console.log('getNearestPanoId 호출 시작');
-        roadviewClient.getNearestPanoId(position, 1000, function(panoId) {
-            console.log('getNearestPanoId 콜백 실행');
-            console.log('panoId:', panoId);
-            if (panoId === null) {
-                alert('이 위치 1km 내에 로드뷰가 없습니다. (산간/농지 지역)');
-                return;
-            }
-
-            console.log('로드뷰 컨테이너 활성화');
-            // 로드뷰 컨테이너 표시
-            document.getElementById('roadview').classList.add('active');
-            document.querySelector('.roadview-close').classList.add('active');
-
-            // 로드뷰 이동
-            console.log('setPanoId 호출:', panoId);
-            roadview.setPanoId(panoId, position);
-            console.log('로드뷰 표시 완료');
-        });
-    } catch(e) {
-        console.error('로드뷰 에러:', e);
-        alert('로드뷰 에러: ' + e.message);
-    }
+        // 로드뷰 이동
+        roadview.setPanoId(panoId, position);
+    });
 }
 
 // 로드뷰 닫기
