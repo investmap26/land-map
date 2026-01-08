@@ -2724,11 +2724,14 @@ function showRoadview(lat, lng) {
         });
         console.log('[showRoadview] 마커 생성됨');
 
-        // 로드뷰 이동 (이벤트 등록 후에!)
-        roadview.setPanoId(panoId, position);
-
-        map.setCenter(position);
-        console.log('[showRoadview] 완료');
+        // 컨테이너 렌더링 후 로드뷰 설정
+        setTimeout(function() {
+            roadview.relayout();
+            roadview.setPanoId(panoId, position);
+            map.setCenter(position);
+            map.relayout();
+            console.log('[showRoadview] 완료 (relayout 적용)');
+        }, 100);
     });
 }
 
