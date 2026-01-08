@@ -2297,7 +2297,7 @@ function quickZoom(type) {
 var roadview = null;
 var roadviewClient = null;
 var roadviewModeEnabled = false;
-var roadviewClickListener = null;
+var roadviewOverlay = null;
 
 // 로드뷰 모드 토글
 function toggleRoadviewMode() {
@@ -2308,20 +2308,20 @@ function toggleRoadviewMode() {
         // 로드뷰 모드 활성화
         btns[3].classList.add('active');
 
-        // 클릭 이벤트 추가
-        roadviewClickListener = kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
-            var latlng = mouseEvent.latLng;
-            showRoadview(latlng.getLat(), latlng.getLng());
-        });
+        // 로드뷰 오버레이 표시 (파란 선)
+        if (!roadviewOverlay) {
+            roadviewOverlay = new kakao.maps.RoadviewOverlay();
+        }
+        roadviewOverlay.setMap(map);
 
-        alert('지도를 클릭하면 해당 위치의 로드뷰가 표시됩니다.');
+        alert('파란 선이 있는 도로를 클릭하면 로드뷰가 표시됩니다.');
     } else {
         // 로드뷰 모드 비활성화
         btns[3].classList.remove('active');
 
-        if (roadviewClickListener) {
-            kakao.maps.event.removeListener(roadviewClickListener);
-            roadviewClickListener = null;
+        // 로드뷰 오버레이 숨기기
+        if (roadviewOverlay) {
+            roadviewOverlay.setMap(null);
         }
     }
 }
