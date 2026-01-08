@@ -1836,7 +1836,39 @@ function init() {
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
-        if (roadviewModeEnabled) { showRoadview(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng()); return; }
+
+        // 로드뷰 모드일 때
+        if (roadviewModeEnabled) {
+            var position = mouseEvent.latLng;
+
+            // roadviewClient 초기화
+            if (!roadviewClient) {
+                roadviewClient = new kakao.maps.RoadviewClient();
+            }
+
+            // 가장 가까운 로드뷰 panoId 찾기
+            roadviewClient.getNearestPanoId(position, 50, function(panoId) {
+                if (panoId === null) {
+                    alert('이 위치에는 로드뷰가 없습니다.');
+                    return;
+                }
+
+                // roadview 초기화
+                if (!roadview) {
+                    var rvContainer = document.getElementById('roadview');
+                    roadview = new kakao.maps.Roadview(rvContainer);
+                }
+
+                // 로드뷰 컨테이너 표시
+                document.getElementById('roadview').classList.add('active');
+                document.querySelector('.roadview-close').classList.add('active');
+
+                // 로드뷰 이동
+                roadview.setPanoId(panoId, position);
+            });
+            return;
+        }
+
         // 검색 마커/인포윈도우 제거
         if (typeof clearSearchMarker === 'function') {
             clearSearchMarker();
