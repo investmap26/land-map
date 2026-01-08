@@ -3687,8 +3687,10 @@ kakao.maps.load(function() {
             // 로드뷰 초기화 - 카카오맵 공식처럼 완벽 연동
             (function initRoadview() {
                 var rvContainer = document.getElementById('roadview');
-                window.roadview = new kakao.maps.Roadview(rvContainer);
-                window.roadviewClient = new kakao.maps.RoadviewClient();
+                roadview = new kakao.maps.Roadview(rvContainer);
+                window.roadview = roadview;
+                roadviewClient = new kakao.maps.RoadviewClient();
+                window.roadviewClient = roadviewClient;
                 window.rvMarkerOverlay = null;
                 window.rvViewpointAngle = 0;
                 console.log('[initRoadview] 로드뷰 초기화 완료');
