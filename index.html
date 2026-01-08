@@ -2133,7 +2133,7 @@ function init() {
         lastClickPosition = mouseEvent.latLng;
 
         // 도구 모드 체크 (거리/반경 측정)
-        if (handleToolClick(mouseEvent.latLng)) {
+        if (window.handleMeasureClick(mouseEvent.latLng)) {
             return;
         }
 
@@ -3250,56 +3250,64 @@ function clearMeasure() {
 
 
 // ====== 플로팅 도구모음 기능 ======
-var currentTool = null; // 'distance', 'radius', null
+var measureMode = null; // 'distance', 'radius', null
 var measurePoints = [];
 var measureMarkers = [];
-var measureShapes = []; // polylines, circles
-var radiusCircle = null;
+var measureShapes = [];
 
-function startDistanceMeasure() {
-    if (currentTool === 'distance') {
-        cancelMeasure();
+window.startDistanceMeasure = function() {
+    console.log('📏 거리 측정 버튼 클릭');
+    if (measureMode === 'distance') {
+        console.log('거리 측정 모드 해제');
+        window.cancelMeasure();
         return;
     }
-    cancelMeasure();
-    currentTool = 'distance';
+    window.cancelMeasure();
+    measureMode = 'distance';
     measurePoints = [];
+    console.log('measureMode =', measureMode);
     document.getElementById('tool-distance').classList.add('active');
     document.getElementById('measure-info').classList.add('active');
     document.getElementById('measure-hint').textContent = '시작점을 클릭하세요';
     document.getElementById('measure-value').textContent = '-';
-}
+};
 
-function startRadiusMeasure() {
-    if (currentTool === 'radius') {
-        cancelMeasure();
+window.startRadiusMeasure = function() {
+    console.log('⭕ 반경 측정 버튼 클릭');
+    if (measureMode === 'radius') {
+        console.log('반경 측정 모드 해제');
+        window.cancelMeasure();
         return;
     }
-    cancelMeasure();
-    currentTool = 'radius';
+    window.cancelMeasure();
+    measureMode = 'radius';
     measurePoints = [];
+    console.log('measureMode =', measureMode);
     document.getElementById('tool-radius').classList.add('active');
     document.getElementById('measure-info').classList.add('active');
     document.getElementById('measure-hint').textContent = '중심점을 클릭하세요';
     document.getElementById('measure-value').textContent = '-';
-}
+};
 
-function handleToolClick(latLng) {
-    if (!currentTool) return false;
+window.handleMeasureClick = function(latLng) {
+    console.log('지도 클릭, measureMode =', measureMode);
+    if (!measureMode) return false;
 
-    if (currentTool === 'distance') {
-        measurePoints.push(latLng);
+    measurePoints.push(latLng);
+    console.log('클릭 포인트 수:', measurePoints.length);
 
-        // 마커 추가
-        var markerImg = measurePoints.length === 1 ?
+    if (measureMode === 'distance') {
+        // 마커 이미지
+        var imgSrc = measurePoints.length === 1 ?
             'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png' :
             'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png';
         var marker = new kakao.maps.Marker({
             position: latLng,
             map: map,
-            image: new kakao.maps.MarkerImage(markerImg, new kakao.maps.Size(50, 45), {offset: new kakao.maps.Point(15, 43)})
+            image: new kakao.maps.MarkerImage(imgSrc, new kakao.maps.Size(50, 45), {offset: new kakao.maps.Point(15, 43)})
         });
         measureMarkers.push(marker);
+        console.log('마커 추가:', measurePoints.length === 1 ? '시작점' : '끝점');
 
         if (measurePoints.length === 1) {
             document.getElementById('measure-hint').textContent = '끝점을 클릭하세요';
@@ -3314,24 +3322,24 @@ function handleToolClick(latLng) {
             });
             line.setMap(map);
             measureShapes.push(line);
+            console.log('Polyline 그림');
 
             // 거리 계산
             var p1 = measurePoints[0], p2 = measurePoints[1];
             var distKm = haversine(p1.getLat(), p1.getLng(), p2.getLat(), p2.getLng());
             var distM = distKm * 1000;
-            document.getElementById('measure-hint').textContent = '거리';
-            document.getElementById('measure-value').textContent = distM >= 1000 ? distKm.toFixed(2) + ' km' : Math.round(distM) + ' m';
+            var distText = distM >= 1000 ? distKm.toFixed(2) + ' km' : Math.round(distM) + ' m';
+            console.log('거리:', distText);
 
-            // 도구 비활성화
+            document.getElementById('measure-hint').textContent = '거리';
+            document.getElementById('measure-value').textContent = distText;
             document.getElementById('tool-distance').classList.remove('active');
-            currentTool = null;
+            measureMode = null;
         }
         return true;
     }
 
-    if (currentTool === 'radius') {
-        measurePoints.push(latLng);
-
+    if (measureMode === 'radius') {
         if (measurePoints.length === 1) {
             // 중심점 마커
             var centerMarker = new kakao.maps.Marker({
@@ -3344,6 +3352,7 @@ function handleToolClick(latLng) {
                 )
             });
             measureMarkers.push(centerMarker);
+            console.log('중심점 마커 추가');
             document.getElementById('measure-hint').textContent = '반경 끝점을 클릭하세요';
         } else if (measurePoints.length === 2) {
             // 반경 계산
@@ -3364,6 +3373,7 @@ function handleToolClick(latLng) {
             });
             circle.setMap(map);
             measureShapes.push(circle);
+            console.log('Circle 그림, 반경:', radiusM, 'm');
 
             // 끝점 마커
             var edgeMarker = new kakao.maps.Marker({
@@ -3377,38 +3387,42 @@ function handleToolClick(latLng) {
             });
             measureMarkers.push(edgeMarker);
 
+            var radiusText = radiusM >= 1000 ? radiusKm.toFixed(2) + ' km' : Math.round(radiusM) + ' m';
             document.getElementById('measure-hint').textContent = '반경';
-            document.getElementById('measure-value').textContent = radiusM >= 1000 ? radiusKm.toFixed(2) + ' km' : Math.round(radiusM) + ' m';
-
+            document.getElementById('measure-value').textContent = radiusText;
             document.getElementById('tool-radius').classList.remove('active');
-            currentTool = null;
+            measureMode = null;
         }
         return true;
     }
 
     return false;
-}
+};
 
-function cancelMeasure() {
-    currentTool = null;
+window.cancelMeasure = function() {
+    measureMode = null;
     measurePoints = [];
-    document.getElementById('tool-distance').classList.remove('active');
-    document.getElementById('tool-radius').classList.remove('active');
-    document.getElementById('measure-info').classList.remove('active');
-}
+    var distBtn = document.getElementById('tool-distance');
+    var radiusBtn = document.getElementById('tool-radius');
+    var info = document.getElementById('measure-info');
+    if (distBtn) distBtn.classList.remove('active');
+    if (radiusBtn) radiusBtn.classList.remove('active');
+    if (info) info.classList.remove('active');
+};
 
-function closeMeasureInfo() {
-    document.getElementById('measure-info').classList.remove('active');
-}
+window.closeMeasureInfo = function() {
+    var info = document.getElementById('measure-info');
+    if (info) info.classList.remove('active');
+};
 
-function clearAllMeasures() {
-    cancelMeasure();
+window.clearAllMeasures = function() {
+    console.log('🗑️ 측정 초기화');
+    window.cancelMeasure();
     measureMarkers.forEach(function(m) { m.setMap(null); });
     measureShapes.forEach(function(s) { s.setMap(null); });
     measureMarkers = [];
     measureShapes = [];
-    document.getElementById('measure-info').classList.remove('active');
-}
+};
 
 // ====== 관심물건 패널 ======
 var bookmarkCategories = {};
