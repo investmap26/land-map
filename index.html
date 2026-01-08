@@ -2709,20 +2709,6 @@ function showRoadview(lat, lng) {
         rvContainer.classList.add('active');
         document.querySelector('.roadview-close').classList.add('active');
 
-        // 지도에 빨간 마커 표시
-        if (window.roadviewPositionMarker) {
-            window.roadviewPositionMarker.setMap(null);
-        }
-        window.roadviewPositionMarker = new kakao.maps.Marker({
-            position: position,
-            map: map,
-            image: new kakao.maps.MarkerImage(
-                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
-                new kakao.maps.Size(50, 45),
-                { offset: new kakao.maps.Point(15, 43) }
-            )
-        });
-
         // 로드뷰 객체 새로 생성 (컨테이너가 보이는 상태에서)
         setTimeout(function() {
             // 기존 로드뷰 내용 제거
@@ -2751,10 +2737,25 @@ function showRoadview(lat, lng) {
                 console.log('[RV] 지도 중심 이동 후:', map.getCenter().getLat(), map.getCenter().getLng());
             });
 
+            // 지도에 빨간 마커 표시 (로드뷰 객체 생성 후!)
+            if (window.roadviewPositionMarker) {
+                window.roadviewPositionMarker.setMap(null);
+            }
+            window.roadviewPositionMarker = new kakao.maps.Marker({
+                position: position,
+                map: map,
+                image: new kakao.maps.MarkerImage(
+                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
+                    new kakao.maps.Size(50, 45),
+                    { offset: new kakao.maps.Point(15, 43) }
+                )
+            });
+            console.log('[showRoadview] 마커 생성됨');
+
             // 로드뷰 이동
             roadview.setPanoId(panoId, position);
             map.setCenter(position);
-            console.log('[showRoadview] 새 로드뷰 객체 생성 및 이동 완료');
+            console.log('[showRoadview] 완료');
         }, 50);
     });
 }
