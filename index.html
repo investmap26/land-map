@@ -2329,10 +2329,17 @@ function toggleRoadviewMode() {
 
 // 로드뷰 표시
 function showRoadview(lat, lng) {
+    // 초기화 확인
+    if (!roadviewClient || !roadview) {
+        var rvContainer = document.getElementById('roadview');
+        roadview = new kakao.maps.Roadview(rvContainer);
+        roadviewClient = new kakao.maps.RoadviewClient();
+    }
+
     var position = new kakao.maps.LatLng(lat, lng);
 
-    // 가장 가까운 로드뷰 위치 찾기
-    roadviewClient.getNearestPanoId(position, 50, function(panoId) {
+    // 가장 가까운 로드뷰 위치 찾기 (반경 100m)
+    roadviewClient.getNearestPanoId(position, 100, function(panoId) {
         if (panoId === null) {
             alert('이 위치에는 로드뷰가 없습니다.');
             return;
@@ -2470,7 +2477,7 @@ function performSearch() {
             // 경공매 검색 결과
             if (auctionResults.length > 0) {
                 html += auctionResults.map(function(d) {
-                    var priceText = d.min_price ? (d.min_price / 10000).toLocaleString() + '만원' : '';
+                    var priceText = d.min_price ? Math.round(d.min_price / 10000).toLocaleString() + '만원' : '';
                     var typeColor = d.auction_type === '공매' ? '#f59e0b' : '#6366f1';
                     var typeLabel = d.auction_type || '경매';
                     return '<div class="search-result-item" onclick="goToAuction(' + d.lat + ',' + d.lng + ',\'' +
@@ -2543,6 +2550,7 @@ function goToAuction(lat, lng, address, caseNo, price, auctionType) {
                   '<div style="margin-top:5px;">' + address + '</div>' +
                   (caseNo ? '<div style="color:#666;margin-top:3px;">' + caseNo + '</div>' : '') +
                   (price ? '<div style="color:#ef4444;font-weight:bold;margin-top:3px;">' + price + '</div>' : '') +
+                  '<button onclick="showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>' +
                   '</div>';
 
     searchInfowindow = new kakao.maps.InfoWindow({
