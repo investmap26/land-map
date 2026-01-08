@@ -1835,6 +1835,7 @@ function init() {
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
+        if (roadviewModeEnabled) { showRoadview(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng()); return; }
         // 검색 마커/인포윈도우 제거
         if (typeof clearSearchMarker === 'function') {
             clearSearchMarker();
