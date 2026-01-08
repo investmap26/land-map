@@ -2543,6 +2543,7 @@ function goToAuction(lat, lng, address, caseNo, price, auctionType) {
                   '<div style="margin-top:5px;">' + address + '</div>' +
                   (caseNo ? '<div style="color:#666;margin-top:3px;">' + caseNo + '</div>' : '') +
                   (price ? '<div style="color:#ef4444;font-weight:bold;margin-top:3px;">' + price + '</div>' : '') +
+                  '<button onclick="showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>' +
                   '</div>';
 
     searchInfowindow = new kakao.maps.InfoWindow({
@@ -2570,6 +2571,7 @@ function goToLocation(lat, lng, name) {
     var content = '<div style="padding:10px;font-size:12px;min-width:150px;position:relative;">' +
                   '<button onclick="clearSearchMarker()" style="position:absolute;top:5px;right:5px;background:none;border:none;font-size:16px;cursor:pointer;color:#999;">&times;</button>' +
                   '<strong>' + name + '</strong>' +
+                  '<br><button onclick="showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>' +
                   '</div>';
 
     searchInfowindow = new kakao.maps.InfoWindow({
