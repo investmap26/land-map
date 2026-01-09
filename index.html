@@ -2196,10 +2196,15 @@ function init() {
         // 로드뷰 모드일 때 (원본: 인라인 코드, 50m 반경)
         if (roadviewModeEnabled) {
             var position = mouseEvent.latLng;
+            console.log('[클릭] 클릭 위치:', position.getLat(), position.getLng());
 
             // 가장 가까운 로드뷰 panoId 찾기 (50m)
             roadviewClient.getNearestPanoId(position, 50, function(panoId) {
+                console.log('[클릭] getNearestPanoId 결과 - panoId:', panoId, ', 반경: 50m');
+
                 if (panoId === null) {
+                    console.log('[클릭] 50m 내 로드뷰 없음');
+                    alert('로드뷰가 없는 위치입니다 (50m 내 없음)');
                     return;
                 }
 
@@ -2210,7 +2215,19 @@ function init() {
                 document.querySelector('.roadview-close').classList.add('active');
 
                 // 로드뷰 이동
+                console.log('[클릭] setPanoId 호출 - panoId:', panoId);
                 roadview.setPanoId(panoId, position);
+
+                // 로드뷰 실제 위치 확인
+                setTimeout(function() {
+                    var rvPos = roadview.getPosition();
+                    console.log('[클릭] 로드뷰 실제 위치:', rvPos.getLat(), rvPos.getLng());
+                    console.log('[클릭] 클릭-로드뷰 거리 차이 (대략):',
+                        Math.round(Math.sqrt(
+                            Math.pow((rvPos.getLat() - position.getLat()) * 111000, 2) +
+                            Math.pow((rvPos.getLng() - position.getLng()) * 88000, 2)
+                        )) + 'm');
+                }, 500);
             });
             return;
         }
