@@ -2679,10 +2679,15 @@ function toggleRoadviewMode() {
 
             // 파란 경로선 클릭 시 해당 위치의 로드뷰 열기
             kakao.maps.event.addListener(roadviewOverlay, 'click', function(mouseEvent) {
+                console.log('[RoadviewOverlay] 클릭 이벤트 발생!', mouseEvent);
                 var position = mouseEvent.latLng;
+                console.log('[RoadviewOverlay] 클릭 위치:', position.getLat(), position.getLng());
                 roadviewClient.getNearestPanoId(position, 10, function(panoId) {
+                    console.log('[RoadviewOverlay] panoId:', panoId);
                     if (panoId) {
                         showRoadview(position.getLat(), position.getLng());
+                    } else {
+                        console.log('[RoadviewOverlay] panoId가 null입니다');
                     }
                 });
             });
