@@ -2735,6 +2735,30 @@ function initRoadview() {
     roadviewClient = new kakao.maps.RoadviewClient();
     window.roadview = roadview;
     window.roadviewClient = roadviewClient;
+
+    // 로드뷰 이동 시 지도 연동
+    kakao.maps.event.addListener(roadview, 'position_changed', function() {
+        var pos = roadview.getPosition();
+
+        // 마커 업데이트
+        if (window.roadviewPositionMarker) {
+            window.roadviewPositionMarker.setPosition(pos);
+        } else {
+            window.roadviewPositionMarker = new kakao.maps.Marker({
+                position: pos,
+                map: map,
+                image: new kakao.maps.MarkerImage(
+                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
+                    new kakao.maps.Size(50, 45),
+                    { offset: new kakao.maps.Point(15, 43) }
+                )
+            });
+        }
+
+        // 지도 중심 이동
+        map.setCenter(pos);
+    });
+
     console.log('[initRoadview] 로드뷰 초기화 완료');
 }
 
