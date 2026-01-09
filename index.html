@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Investment Map Pro v2.2</title>
+    <title>Investment Map Pro v2.3</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -941,7 +941,7 @@
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #f97316; color: #f97316;"></div>
                 <span class="layer-name">토지목록</span>
-                <span class="layer-count">262</span>
+                <span class="layer-count">996</span>
             </label>
             <label class="layer-item">
                 <input type="checkbox" id="layer-exact" checked onchange="toggleLayer('exact')">
@@ -2293,7 +2293,7 @@ function init() {
 
 
     // 토지보상구역 폴리곤 데이터 로드 및 렌더링
-    fetch("data_proj.json?v=202601091403")
+    fetch("data_proj.json?v=202601091412")
         .then(function(r) { return r.json(); })
         .then(function(projData) {
             console.log("폴리곤 데이터 로드 완료:", projData.length);
@@ -2739,10 +2739,12 @@ function initRoadview() {
     // 로드뷰 이동 시 지도 연동
     kakao.maps.event.addListener(roadview, 'position_changed', function() {
         var pos = roadview.getPosition();
+        console.log('[position_changed] 로드뷰 위치:', pos.getLat(), pos.getLng());
 
         // 마커 업데이트
         if (window.roadviewPositionMarker) {
             window.roadviewPositionMarker.setPosition(pos);
+            console.log('[position_changed] 마커 위치 업데이트');
         } else {
             window.roadviewPositionMarker = new kakao.maps.Marker({
                 position: pos,
@@ -2753,10 +2755,12 @@ function initRoadview() {
                     { offset: new kakao.maps.Point(15, 43) }
                 )
             });
+            console.log('[position_changed] 마커 생성');
         }
 
         // 지도 중심 이동
         map.setCenter(pos);
+        console.log('[position_changed] 지도 중심 이동 완료');
     });
 
     console.log('[initRoadview] 로드뷰 초기화 완료');
