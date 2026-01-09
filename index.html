@@ -2691,14 +2691,15 @@ function toggleRoadviewMode() {
     }
 }
 
-// 로드뷰 표시 (반반 화면 + 위치 마커)
+// 로드뷰 표시 (공식 예제 방식)
 function showRoadview(lat, lng) {
     var position = new kakao.maps.LatLng(lat, lng);
-    console.log('[showRoadview] 호출:', lat, lng);
+    console.log('[showRoadview] 클릭 위치:', lat, lng);
 
     // 가장 가까운 로드뷰 위치 찾기 (반경 50m)
     roadviewClient.getNearestPanoId(position, 50, function(panoId) {
-        console.log('[showRoadview] panoId:', panoId);
+        console.log('[showRoadview] 찾은 panoId:', panoId);
+
         if (panoId === null) {
             alert('로드뷰가 없는 위치입니다');
             return;
@@ -2714,26 +2715,23 @@ function showRoadview(lat, lng) {
         var mapContainer = document.getElementById('map');
         mapContainer.style.cssText = 'position:fixed; top:0; right:0; width:50vw; height:100vh;';
         map.relayout();
-        console.log('[showRoadview] 지도 오른쪽 50%로 이동');
 
-        // 로드뷰 객체 새로 생성 (컨테이너가 보이는 상태에서)
-        setTimeout(function() {
-            // 기존 로드뷰 내용 제거
-            rvContainer.innerHTML = '';
-
-            // 새 로드뷰 객체 생성
+        // 로드뷰 객체가 없으면 생성 (한 번만)
+        if (!roadview) {
             roadview = new kakao.maps.Roadview(rvContainer);
             window.roadview = roadview;
 
-            // 이벤트 리스너 등록 - 로드뷰 위치 변경 시 마커/지도 업데이트
+            // position_changed 이벤트 리스너 (한 번만 등록)
             kakao.maps.event.addListener(roadview, 'position_changed', function() {
-                var pos = roadview.getPosition();
-                console.log('[RV] position_changed - 실제 로드뷰 위치:', pos.getLat(), pos.getLng());
+                var rvPosition = roadview.getPosition();
+                console.log('[RV] position_changed:', rvPosition.getLat(), rvPosition.getLng());
 
-                // 마커가 없으면 생성, 있으면 위치 업데이트
-                if (!window.roadviewPositionMarker) {
+                // 마커 업데이트
+                if (window.roadviewPositionMarker) {
+                    window.roadviewPositionMarker.setPosition(rvPosition);
+                } else {
                     window.roadviewPositionMarker = new kakao.maps.Marker({
-                        position: pos,
+                        position: rvPosition,
                         map: map,
                         image: new kakao.maps.MarkerImage(
                             'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
@@ -2741,26 +2739,15 @@ function showRoadview(lat, lng) {
                             { offset: new kakao.maps.Point(15, 43) }
                         )
                     });
-                    console.log('[RV] 마커 생성됨 (실제 로드뷰 위치)');
-                } else {
-                    window.roadviewPositionMarker.setPosition(pos);
-                    console.log('[RV] 마커 위치 업데이트');
                 }
-
-                map.setCenter(pos);
-                console.log('[RV] 지도 중심 이동:', pos.getLat(), pos.getLng());
+                map.setCenter(rvPosition);
             });
+        }
 
-            // 기존 마커 제거
-            if (window.roadviewPositionMarker) {
-                window.roadviewPositionMarker.setMap(null);
-                window.roadviewPositionMarker = null;
-            }
-
-            // 로드뷰 이동 (position_changed 이벤트에서 실제 위치로 마커/지도 설정)
-            roadview.setPanoId(panoId, position);
-            console.log('[showRoadview] setPanoId 호출, position_changed 대기중...');
-        }, 50);
+        // 로드뷰 설정 및 relayout (공식 예제 방식)
+        roadview.setPanoId(panoId, position);
+        roadview.relayout();
+        console.log('[showRoadview] setPanoId + relayout 완료');
     });
 }
 
