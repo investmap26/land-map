@@ -2736,34 +2736,55 @@ function initRoadview() {
     window.roadview = roadview;
     window.roadviewClient = roadviewClient;
 
+    // 방향 표시 오버레이 생성 함수
+    function createDirectionOverlay(pos, angle) {
+        var content = '<div class="rv-direction-marker" style="transform: rotate(' + angle + 'deg);">' +
+            '<svg width="60" height="60" viewBox="0 0 60 60">' +
+            '<circle cx="30" cy="30" r="8" fill="#3b82f6" stroke="#fff" stroke-width="2"/>' +
+            '<path d="M30,30 L15,5 A28,28 0 0,1 45,5 Z" fill="rgba(59,130,246,0.5)" stroke="#3b82f6" stroke-width="1"/>' +
+            '</svg></div>';
+
+        return new kakao.maps.CustomOverlay({
+            position: pos,
+            content: content,
+            yAnchor: 0.5,
+            xAnchor: 0.5,
+            zIndex: 10
+        });
+    }
+
     // 로드뷰 이동 시 지도 연동
     kakao.maps.event.addListener(roadview, 'position_changed', function() {
         var pos = roadview.getPosition();
-        console.log('[position_changed] 로드뷰 위치:', pos.getLat(), pos.getLng());
+        var viewpoint = roadview.getViewpoint();
+        var angle = viewpoint.pan;
 
-        // 마커 업데이트
-        if (window.roadviewPositionMarker) {
-            window.roadviewPositionMarker.setPosition(pos);
-            console.log('[position_changed] 마커 위치 업데이트');
-        } else {
-            window.roadviewPositionMarker = new kakao.maps.Marker({
-                position: pos,
-                map: map,
-                image: new kakao.maps.MarkerImage(
-                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
-                    new kakao.maps.Size(50, 45),
-                    { offset: new kakao.maps.Point(15, 43) }
-                )
-            });
-            console.log('[position_changed] 마커 생성');
+        // 기존 오버레이 제거 후 새로 생성
+        if (window.roadviewDirectionOverlay) {
+            window.roadviewDirectionOverlay.setMap(null);
         }
+        window.roadviewDirectionOverlay = createDirectionOverlay(pos, angle);
+        window.roadviewDirectionOverlay.setMap(map);
 
         // 지도 중심 이동
         map.setCenter(pos);
-        console.log('[position_changed] 지도 중심 이동 완료');
     });
 
-    console.log('[initRoadview] 로드뷰 초기화 완료');
+    // 로드뷰 방향 변경 시 마커 회전
+    kakao.maps.event.addListener(roadview, 'viewpoint_changed', function() {
+        var pos = roadview.getPosition();
+        var viewpoint = roadview.getViewpoint();
+        var angle = viewpoint.pan;
+
+        // 기존 오버레이 제거 후 새로 생성
+        if (window.roadviewDirectionOverlay) {
+            window.roadviewDirectionOverlay.setMap(null);
+        }
+        window.roadviewDirectionOverlay = createDirectionOverlay(pos, angle);
+        window.roadviewDirectionOverlay.setMap(map);
+    });
+
+    console.log('[initRoadview] 로드뷰 초기화 완료 (방향 표시 포함)');
 }
 
 // 로드뷰 표시 (원본 그대로 - 전체 화면, 1000m)
@@ -2809,6 +2830,12 @@ function closeRoadview() {
     if (window.roadviewPositionMarker) {
         window.roadviewPositionMarker.setMap(null);
         window.roadviewPositionMarker = null;
+    }
+
+    // 방향 오버레이 제거
+    if (window.roadviewDirectionOverlay) {
+        window.roadviewDirectionOverlay.setMap(null);
+        window.roadviewDirectionOverlay = null;
     }
 
     console.log('[closeRoadview] 로드뷰 닫힘, 지도 복원');
