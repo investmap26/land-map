@@ -2696,8 +2696,8 @@ function showRoadview(lat, lng) {
     var position = new kakao.maps.LatLng(lat, lng);
     console.log('[showRoadview] 호출:', lat, lng);
 
-    // 가장 가까운 로드뷰 위치 찾기 (반경 50m - 파란선 근처만 작동)
-    roadviewClient.getNearestPanoId(position, 50, function(panoId) {
+    // 가장 가까운 로드뷰 위치 찾기 (반경 10m - 파란선 바로 위만 작동)
+    roadviewClient.getNearestPanoId(position, 10, function(panoId) {
         console.log('[showRoadview] panoId:', panoId);
         if (panoId === null) {
             alert('로드뷰가 없는 위치입니다');
