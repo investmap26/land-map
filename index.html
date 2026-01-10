@@ -2763,6 +2763,14 @@ function initRoadview() {
         });
     }
 
+    // 로드뷰 초기화 완료 이벤트
+    console.log('[initRoadview] 이벤트 리스너 등록 시작');
+    kakao.maps.event.addListener(roadview, 'init', function() {
+        console.log('[이벤트] init 발생 - 로드뷰 초기화 완료');
+        updateRoadviewDate();
+    });
+    console.log('[initRoadview] init 이벤트 등록 완료');
+
     // 로드뷰 이동 시 지도 연동
     kakao.maps.event.addListener(roadview, 'position_changed', function() {
         console.log('[이벤트] position_changed 발생');
@@ -2781,8 +2789,11 @@ function initRoadview() {
         map.setCenter(pos);
 
         // 촬영 날짜 업데이트
+        console.log('[position_changed] updateRoadviewDate 호출 직전');
         updateRoadviewDate();
+        console.log('[position_changed] updateRoadviewDate 호출 완료');
     });
+    console.log('[initRoadview] position_changed 이벤트 등록 완료');
 
     // 로드뷰 방향 변경 시 마커 회전
     kakao.maps.event.addListener(roadview, 'viewpoint_changed', function() {
@@ -2797,12 +2808,14 @@ function initRoadview() {
         window.roadviewDirectionOverlay = createDirectionOverlay(pos, angle);
         window.roadviewDirectionOverlay.setMap(map);
     });
+    console.log('[initRoadview] viewpoint_changed 이벤트 등록 완료');
 
     // 로드뷰 파노라마 변경 시 촬영 날짜 표시
     kakao.maps.event.addListener(roadview, 'pano_id_changed', function() {
         console.log('[이벤트] pano_id_changed 발생');
         updateRoadviewDate();
     });
+    console.log('[initRoadview] pano_id_changed 이벤트 등록 완료');
 
     console.log('[initRoadview] 로드뷰 초기화 완료 (방향 표시 포함)');
 }
@@ -2910,6 +2923,12 @@ function showRoadview(lat, lng) {
         console.log('[showRoadview] setPanoId 호출 전');
         roadview.setPanoId(panoId, position);
         console.log('[showRoadview] setPanoId 호출 후');
+
+        // 1초 후 직접 날짜 업데이트 호출 (이벤트 백업)
+        setTimeout(function() {
+            console.log('[showRoadview] setTimeout에서 updateRoadviewDate 직접 호출');
+            updateRoadviewDate();
+        }, 1000);
     });
 }
 
