@@ -2737,9 +2737,12 @@ function toggleRoadviewMode() {
 
 // 로드뷰 초기화 (페이지 로드 시 한 번만 호출)
 function initRoadview() {
+    console.log('[initRoadview] 함수 시작');
     var rvContainer = document.getElementById('roadview');
+    console.log('[initRoadview] 로드뷰 컨테이너:', rvContainer);
     roadview = new kakao.maps.Roadview(rvContainer);
     roadviewClient = new kakao.maps.RoadviewClient();
+    console.log('[initRoadview] roadview 객체 생성됨:', roadview);
     window.roadview = roadview;
     window.roadviewClient = roadviewClient;
 
@@ -2886,11 +2889,14 @@ window.openKakaoMapRoadview = openKakaoMapRoadview;
 
 // 로드뷰 표시 (원본 그대로 - 전체 화면, 1000m)
 function showRoadview(lat, lng) {
+    console.log('[showRoadview] 함수 호출됨, lat:', lat, 'lng:', lng);
     var position = new kakao.maps.LatLng(lat, lng);
 
     // 가장 가까운 로드뷰 위치 찾기 (반경 1000m - 원본)
     roadviewClient.getNearestPanoId(position, 1000, function(panoId) {
+        console.log('[showRoadview] getNearestPanoId 콜백, panoId:', panoId);
         if (panoId === null) {
+            console.log('[showRoadview] panoId가 null - 로드뷰 없음');
             return;
         }
 
@@ -2901,7 +2907,9 @@ function showRoadview(lat, lng) {
         document.querySelector('.roadview-close').classList.add('active');
 
         // 로드뷰 이동 (원본)
+        console.log('[showRoadview] setPanoId 호출 전');
         roadview.setPanoId(panoId, position);
+        console.log('[showRoadview] setPanoId 호출 후');
     });
 }
 
