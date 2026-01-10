@@ -2775,6 +2775,9 @@ function initRoadview() {
 
         // 지도 중심 이동
         map.setCenter(pos);
+
+        // 촬영 날짜 업데이트
+        updateRoadviewDate();
     });
 
     // 로드뷰 방향 변경 시 마커 회전
@@ -2803,6 +2806,10 @@ function initRoadview() {
 function updateRoadviewDate() {
     setTimeout(function() {
         var rvContainer = document.getElementById('roadview');
+        if (!rvContainer) {
+            console.log('[날짜] 로드뷰 컨테이너 없음');
+            return;
+        }
 
         // 날짜 표시 요소가 없으면 생성
         var dateOverlay = document.getElementById('rv-date-overlay');
@@ -2811,14 +2818,17 @@ function updateRoadviewDate() {
             dateOverlay.id = 'rv-date-overlay';
             dateOverlay.style.cssText = 'position:absolute;bottom:60px;left:10px;background:rgba(0,0,0,0.7);color:#fff;padding:6px 12px;border-radius:4px;font-size:12px;z-index:1000000;font-family:Pretendard,sans-serif;';
             rvContainer.appendChild(dateOverlay);
+            console.log('[날짜] 오버레이 생성됨');
         }
 
         // 이미지 URL에서 날짜 추출 (map_roadview/YYYY/MM/.../YYYYMMDDHHMMSS_cube)
         var dateText = '촬영일: 정보 없음';
         var imgs = rvContainer.querySelectorAll('img[src*="map_roadview"]');
+        console.log('[날짜] map_roadview 이미지 수:', imgs.length);
 
         if (imgs.length > 0) {
             var imgSrc = imgs[0].src;
+            console.log('[날짜] 이미지 URL:', imgSrc.substring(0, 100));
             // URL 형식: https://map3.daumcdn.net/map_roadview/2025/06/.../20250617050442_cube/...
             var dateMatch = imgSrc.match(/map_roadview\/(\d{4})\/(\d{2})\/.*\/(\d{4})(\d{2})(\d{2})/);
             if (dateMatch) {
@@ -2826,11 +2836,14 @@ function updateRoadviewDate() {
                 var month = parseInt(dateMatch[4]);
                 var day = parseInt(dateMatch[5]);
                 dateText = '촬영일: ' + year + '년 ' + month + '월 ' + day + '일';
+                console.log('[날짜] 추출 성공:', dateText);
+            } else {
+                console.log('[날짜] 날짜 패턴 매칭 실패');
             }
         }
 
         dateOverlay.textContent = dateText;
-    }, 300);
+    }, 500);
 }
 
 // 로드뷰 표시 (원본 그대로 - 전체 화면, 1000m)
