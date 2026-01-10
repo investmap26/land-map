@@ -2243,6 +2243,13 @@ function init() {
         }
     });
 
+    // 더블클릭 시 거리 측정 완료
+    kakao.maps.event.addListener(map, 'dblclick', function(mouseEvent) {
+        if (measureMode === 'distance' && measurePoints.length >= 2) {
+            window.finishDistanceMeasure();
+        }
+    });
+
     // 줌 변경 시 경공매 표시 여부 업데이트
     kakao.maps.event.addListener(map, 'zoom_changed', function() {
         updateAuctionVisibility();
@@ -3420,6 +3427,8 @@ var measureMode = null; // 'distance', 'radius', null
 var measurePoints = [];
 var measureMarkers = [];
 var measureShapes = [];
+var measureTotalDistance = 0;
+var measureDistanceLabels = [];
 
 window.startDistanceMeasure = function() {
     console.log('📏 거리 측정 버튼 클릭');
@@ -3431,11 +3440,13 @@ window.startDistanceMeasure = function() {
     window.cancelMeasure();
     measureMode = 'distance';
     measurePoints = [];
+    measureTotalDistance = 0;
+    measureDistanceLabels = [];
     console.log('measureMode =', measureMode);
     document.getElementById('tool-distance').classList.add('active');
     document.getElementById('measure-info').classList.add('active');
-    document.getElementById('measure-hint').textContent = '시작점을 클릭하세요';
-    document.getElementById('measure-value').textContent = '-';
+    document.getElementById('measure-hint').textContent = '클릭하여 경로 추가 (더블클릭: 완료)';
+    document.getElementById('measure-value').textContent = '0 m';
 };
 
 window.startRadiusMeasure = function() {
@@ -3463,24 +3474,38 @@ window.handleMeasureClick = function(latLng) {
     console.log('클릭 포인트 수:', measurePoints.length);
 
     if (measureMode === 'distance') {
-        // 마커 이미지
-        var imgSrc = measurePoints.length === 1 ?
-            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png' :
-            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png';
-        var marker = new kakao.maps.Marker({
-            position: latLng,
-            map: map,
-            image: new kakao.maps.MarkerImage(imgSrc, new kakao.maps.Size(50, 45), {offset: new kakao.maps.Point(15, 43)})
-        });
-        measureMarkers.push(marker);
-        console.log('마커 추가:', measurePoints.length === 1 ? '시작점' : '끝점');
-
+        // 마커 생성 (시작점: 빨간색, 경유점: 작은 원)
+        var marker;
         if (measurePoints.length === 1) {
-            document.getElementById('measure-hint').textContent = '끝점을 클릭하세요';
-        } else if (measurePoints.length === 2) {
+            marker = new kakao.maps.Marker({
+                position: latLng,
+                map: map,
+                image: new kakao.maps.MarkerImage(
+                    'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
+                    new kakao.maps.Size(50, 45),
+                    {offset: new kakao.maps.Point(15, 43)}
+                )
+            });
+        } else {
+            // 경유점: 작은 원형 마커
+            marker = new kakao.maps.CustomOverlay({
+                position: latLng,
+                content: '<div style="width:12px;height:12px;background:#10b981;border:2px solid #fff;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',
+                yAnchor: 0.5,
+                xAnchor: 0.5,
+                map: map
+            });
+        }
+        measureMarkers.push(marker);
+
+        // 이전 점과 선 연결 및 거리 계산
+        if (measurePoints.length >= 2) {
+            var p1 = measurePoints[measurePoints.length - 2];
+            var p2 = measurePoints[measurePoints.length - 1];
+
             // 선 그리기
             var line = new kakao.maps.Polyline({
-                path: measurePoints,
+                path: [p1, p2],
                 strokeWeight: 4,
                 strokeColor: '#10b981',
                 strokeOpacity: 0.9,
@@ -3488,20 +3513,33 @@ window.handleMeasureClick = function(latLng) {
             });
             line.setMap(map);
             measureShapes.push(line);
-            console.log('Polyline 그림');
 
-            // 거리 계산
-            var p1 = measurePoints[0], p2 = measurePoints[1];
-            var distKm = haversine(p1.getLat(), p1.getLng(), p2.getLat(), p2.getLng());
-            var distM = distKm * 1000;
-            var distText = distM >= 1000 ? distKm.toFixed(2) + ' km' : Math.round(distM) + ' m';
-            console.log('거리:', distText);
+            // 구간 거리 계산
+            var segmentKm = haversine(p1.getLat(), p1.getLng(), p2.getLat(), p2.getLng());
+            var segmentM = segmentKm * 1000;
+            measureTotalDistance += segmentM;
 
-            document.getElementById('measure-hint').textContent = '거리';
-            document.getElementById('measure-value').textContent = distText;
-            document.getElementById('tool-distance').classList.remove('active');
-            measureMode = null;
+            // 구간 거리 라벨 표시
+            var midLat = (p1.getLat() + p2.getLat()) / 2;
+            var midLng = (p1.getLng() + p2.getLng()) / 2;
+            var segmentText = segmentM >= 1000 ? (segmentM/1000).toFixed(1) + 'km' : Math.round(segmentM) + 'm';
+            var distLabel = new kakao.maps.CustomOverlay({
+                position: new kakao.maps.LatLng(midLat, midLng),
+                content: '<div style="background:#10b981;color:#fff;padding:2px 6px;border-radius:10px;font-size:11px;font-weight:bold;box-shadow:0 2px 4px rgba(0,0,0,0.2);">' + segmentText + '</div>',
+                yAnchor: 0.5,
+                xAnchor: 0.5,
+                map: map
+            });
+            measureDistanceLabels.push(distLabel);
+
+            // 총 거리 표시
+            var totalText = measureTotalDistance >= 1000 ?
+                (measureTotalDistance/1000).toFixed(2) + ' km' :
+                Math.round(measureTotalDistance) + ' m';
+            document.getElementById('measure-value').textContent = '총 ' + totalText;
         }
+
+        document.getElementById('measure-hint').textContent = '클릭: 경로 추가 | 더블클릭: 완료';
         return true;
     }
 
@@ -3568,6 +3606,7 @@ window.handleMeasureClick = function(latLng) {
 window.cancelMeasure = function() {
     measureMode = null;
     measurePoints = [];
+    measureTotalDistance = 0;
     var distBtn = document.getElementById('tool-distance');
     var radiusBtn = document.getElementById('tool-radius');
     var info = document.getElementById('measure-info');
@@ -3581,13 +3620,30 @@ window.closeMeasureInfo = function() {
     if (info) info.classList.remove('active');
 };
 
+// 거리 측정 완료 (더블클릭 시)
+window.finishDistanceMeasure = function() {
+    if (measureMode !== 'distance' || measurePoints.length < 2) return;
+
+    console.log('📏 거리 측정 완료, 총 ' + measurePoints.length + '개 지점');
+    var totalText = measureTotalDistance >= 1000 ?
+        (measureTotalDistance/1000).toFixed(2) + ' km' :
+        Math.round(measureTotalDistance) + ' m';
+
+    document.getElementById('measure-hint').textContent = '총 거리 (' + measurePoints.length + '개 지점)';
+    document.getElementById('measure-value').textContent = totalText;
+    document.getElementById('tool-distance').classList.remove('active');
+    measureMode = null;
+};
+
 window.clearAllMeasures = function() {
     console.log('🗑️ 측정 초기화');
     window.cancelMeasure();
     measureMarkers.forEach(function(m) { m.setMap(null); });
     measureShapes.forEach(function(s) { s.setMap(null); });
+    measureDistanceLabels.forEach(function(l) { l.setMap(null); });
     measureMarkers = [];
     measureShapes = [];
+    measureDistanceLabels = [];
 };
 
 // ====== 관심물건 패널 ======
