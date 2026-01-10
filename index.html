@@ -170,8 +170,7 @@
         
         /* 검색 패널 */
         .search-panel {
-            position: absolute; top: 20px; left: 50%;
-            transform: translateX(-50%);
+            position: absolute; bottom: 80px; right: 20px;
             background: linear-gradient(160deg, rgba(22, 22, 30, 0.97), rgba(15, 15, 20, 0.99));
             backdrop-filter: blur(40px) saturate(200%);
             border: 1px solid rgba(255,255,255,0.06);
@@ -2412,14 +2411,14 @@ function createMarker(lat, lng, color, type) {
     var svg;
 
     if (type === 'rail') {
-        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><text x="10" y="15" font-size="14" text-anchor="middle">🚂</text></svg>');
-        size = 20;
+        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><text x="20" y="30" font-size="28" text-anchor="middle">🚂</text></svg>');
+        size = 40;
     } else if (type === 'highway') {
-        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><text x="10" y="15" font-size="14" text-anchor="middle">🛣️</text></svg>');
-        size = 20;
+        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><text x="20" y="30" font-size="28" text-anchor="middle">🛣️</text></svg>');
+        size = 40;
     } else if (type === 'dev') {
-        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><text x="10" y="15" font-size="14" text-anchor="middle">🏗️</text></svg>');
-        size = 20;
+        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><text x="20" y="30" font-size="28" text-anchor="middle">🏗️</text></svg>');
+        size = 40;
     } else if (type === 'inside') {
         // 지구내 - 큰 빨간 마커 (강조)
         svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="10" fill="' + color + '" stroke="white" stroke-width="2"/><text x="12" y="16" font-size="10" font-weight="bold" fill="white" text-anchor="middle" font-family="sans-serif">★</text></svg>');
@@ -2428,6 +2427,9 @@ function createMarker(lat, lng, color, type) {
         // 지구내(폴리곤) - 주황색 원
         svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"><circle cx="9" cy="9" r="7" fill="' + color + '" stroke="white" stroke-width="2"/></svg>');
         size = 18;
+    } else if (type === 'ic') {
+        svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><text x="20" y="30" font-size="28" text-anchor="middle">🚗</text></svg>');
+        size = 40;
     } else if (type === 'auction') {
         svg = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"><circle cx="7" cy="7" r="6" fill="' + color + '" stroke="white" stroke-width="1"/><text x="7" y="11" font-size="8" font-weight="bold" fill="white" text-anchor="middle" font-family="sans-serif">경</text></svg>');
         size = 14;
