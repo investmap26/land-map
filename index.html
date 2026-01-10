@@ -941,7 +941,7 @@
                 <div class="toggle"></div>
                 <div class="layer-color" style="background: #f97316; color: #f97316;"></div>
                 <span class="layer-name">토지목록</span>
-                <span class="layer-count">393</span>
+                <span class="layer-count">328</span>
             </label>
             <label class="layer-item">
                 <input type="checkbox" id="layer-exact" checked onchange="toggleLayer('exact')">
@@ -977,19 +977,7 @@
         </div>
     </div>
 
-    <div class="stats-panel">
-        <div class="stats-title">Statistics</div>
-        <div class="stat-item"><span class="stat-label">완전일치</span><span class="stat-value highlight" id="stat-exact">0</span></div>
-        <div class="stat-item"><span class="stat-label">500m이내</span><span class="stat-value" id="stat-500m">0</span></div>
-        <div class="stat-item"><span class="stat-label">1km이내</span><span class="stat-value" id="stat-1km">0</span></div>
-        <div class="stat-item"><span class="stat-label">사업지구</span><span class="stat-value">270</span></div>
-    </div>
 
-    <div class="legend">
-        <div class="legend-item"><span style="background: #ef4444; color: #ef4444;"></span><span>완전일치</span></div>
-        <div class="legend-item"><span style="background: #fbbf24; color: #fbbf24;"></span><span>500m</span></div>
-        <div class="legend-item"><span style="background: #fb923c; color: #fb923c;"></span><span>1km</span></div>
-    </div>
 
     <div class="logo">INVESTMENT MAP</div>
 
@@ -2301,7 +2289,7 @@ function init() {
 
 
     // 토지보상구역 폴리곤 데이터 로드 및 렌더링
-    fetch("data_proj.json?v=202601101455")
+    fetch("data_proj.json?v=202601101535")
         .then(function(r) { return r.json(); })
         .then(function(projData) {
             console.log("폴리곤 데이터 로드 완료:", projData.length);
