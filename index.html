@@ -2802,49 +2802,60 @@ function initRoadview() {
     console.log('[initRoadview] 로드뷰 초기화 완료 (방향 표시 포함)');
 }
 
-// 로드뷰 촬영 날짜 표시
+// 로드뷰 촬영 날짜 표시 및 카카오맵 버튼
 function updateRoadviewDate() {
     setTimeout(function() {
         var rvContainer = document.getElementById('roadview');
-        if (!rvContainer) {
-            console.log('[날짜] 로드뷰 컨테이너 없음');
-            return;
+        if (!rvContainer) return;
+
+        // 현재 로드뷰 위치 저장
+        if (roadview) {
+            var pos = roadview.getPosition();
+            window.currentRoadviewLat = pos.getLat();
+            window.currentRoadviewLng = pos.getLng();
         }
 
-        // 날짜 표시 요소가 없으면 생성
-        var dateOverlay = document.getElementById('rv-date-overlay');
-        if (!dateOverlay) {
-            dateOverlay = document.createElement('div');
-            dateOverlay.id = 'rv-date-overlay';
-            dateOverlay.style.cssText = 'position:absolute;bottom:60px;left:10px;background:rgba(0,0,0,0.7);color:#fff;padding:6px 12px;border-radius:4px;font-size:12px;z-index:1000000;font-family:Pretendard,sans-serif;';
-            rvContainer.appendChild(dateOverlay);
-            console.log('[날짜] 오버레이 생성됨');
+        // 정보 패널이 없으면 생성
+        var infoPanel = document.getElementById('rv-info-panel');
+        if (!infoPanel) {
+            infoPanel = document.createElement('div');
+            infoPanel.id = 'rv-info-panel';
+            infoPanel.style.cssText = 'position:absolute;bottom:10px;left:10px;background:rgba(0,0,0,0.8);color:#fff;padding:10px 14px;border-radius:8px;font-size:12px;z-index:1000000;font-family:Pretendard,sans-serif;display:flex;flex-direction:column;gap:8px;';
+            rvContainer.appendChild(infoPanel);
         }
 
-        // 이미지 URL에서 날짜 추출 (map_roadview/YYYY/MM/.../YYYYMMDDHHMMSS_cube)
+        // 이미지 URL에서 날짜 추출
         var dateText = '촬영일: 정보 없음';
         var imgs = rvContainer.querySelectorAll('img[src*="map_roadview"]');
-        console.log('[날짜] map_roadview 이미지 수:', imgs.length);
 
         if (imgs.length > 0) {
             var imgSrc = imgs[0].src;
-            console.log('[날짜] 이미지 URL:', imgSrc.substring(0, 100));
-            // URL 형식: https://map3.daumcdn.net/map_roadview/2025/06/.../20250617050442_cube/...
             var dateMatch = imgSrc.match(/map_roadview\/(\d{4})\/(\d{2})\/.*\/(\d{4})(\d{2})(\d{2})/);
             if (dateMatch) {
                 var year = dateMatch[3];
                 var month = parseInt(dateMatch[4]);
                 var day = parseInt(dateMatch[5]);
                 dateText = '촬영일: ' + year + '년 ' + month + '월 ' + day + '일';
-                console.log('[날짜] 추출 성공:', dateText);
-            } else {
-                console.log('[날짜] 날짜 패턴 매칭 실패');
             }
         }
 
-        dateOverlay.textContent = dateText;
+        // 패널 내용 업데이트
+        infoPanel.innerHTML = '<div style="font-weight:500;">' + dateText + '</div>' +
+            '<button onclick="openKakaoMapRoadview()" style="background:#fee500;color:#000;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">' +
+            '<span style="font-size:14px;">🗺️</span> 카카오맵에서 보기 (과거사진)</button>';
     }, 500);
 }
+
+// 카카오맵 로드뷰 페이지 열기 (타임머신 지원)
+function openKakaoMapRoadview() {
+    var lat = window.currentRoadviewLat;
+    var lng = window.currentRoadviewLng;
+    if (lat && lng) {
+        var url = 'https://map.kakao.com/link/roadview/' + lat + ',' + lng;
+        window.open(url, '_blank');
+    }
+}
+window.openKakaoMapRoadview = openKakaoMapRoadview;
 
 // 로드뷰 표시 (원본 그대로 - 전체 화면, 1000m)
 function showRoadview(lat, lng) {
@@ -2895,6 +2906,12 @@ function closeRoadview() {
     if (window.roadviewDirectionOverlay) {
         window.roadviewDirectionOverlay.setMap(null);
         window.roadviewDirectionOverlay = null;
+    }
+
+    // 정보 패널 제거
+    var infoPanel = document.getElementById('rv-info-panel');
+    if (infoPanel) {
+        infoPanel.remove();
     }
 
     console.log('[closeRoadview] 로드뷰 닫힘, 지도 복원');
