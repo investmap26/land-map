@@ -2180,7 +2180,8 @@ function init() {
     var container = document.getElementById('map');
     map = new kakao.maps.Map(container, {
         center: new kakao.maps.LatLng(36.5, 127.5),
-        level: 13
+        level: 13,
+        mapTypeId: kakao.maps.MapTypeId.SKYVIEW
     });
     window.map = map; // 전역 접근용
 
