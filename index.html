@@ -817,8 +817,8 @@
     <button class="roadview-close" onclick="closeRoadview()">✕ 로드뷰 닫기</button>
 
     <div class="map-type-selector">
-        <button class="map-type-btn active" onclick="setMapType('roadmap')">일반</button>
-        <button class="map-type-btn" onclick="setMapType('skyview')">스카이뷰</button>
+        <button class="map-type-btn" onclick="setMapType('roadmap')">일반</button>
+        <button class="map-type-btn active" onclick="setMapType('skyview')">스카이뷰</button>
         <button class="map-type-btn" onclick="toggleCadastral()">지적도</button>
         <button class="map-type-btn" onclick="toggleRoadviewMode()">로드뷰</button>
         </div>
@@ -2181,7 +2181,7 @@ function init() {
     map = new kakao.maps.Map(container, {
         center: new kakao.maps.LatLng(36.5, 127.5),
         level: 13,
-        mapTypeId: kakao.maps.MapTypeId.SKYVIEW
+        mapTypeId: kakao.maps.MapTypeId.HYBRID
     });
     window.map = map; // 전역 접근용
 
