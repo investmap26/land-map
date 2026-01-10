@@ -2762,6 +2762,7 @@ function initRoadview() {
 
     // 로드뷰 이동 시 지도 연동
     kakao.maps.event.addListener(roadview, 'position_changed', function() {
+        console.log('[이벤트] position_changed 발생');
         var pos = roadview.getPosition();
         var viewpoint = roadview.getViewpoint();
         var angle = viewpoint.pan;
@@ -2796,6 +2797,7 @@ function initRoadview() {
 
     // 로드뷰 파노라마 변경 시 촬영 날짜 표시
     kakao.maps.event.addListener(roadview, 'pano_id_changed', function() {
+        console.log('[이벤트] pano_id_changed 발생');
         updateRoadviewDate();
     });
 
@@ -2804,9 +2806,15 @@ function initRoadview() {
 
 // 로드뷰 촬영 날짜 표시 및 카카오맵 버튼
 function updateRoadviewDate() {
+    console.log('[날짜] updateRoadviewDate 함수 호출됨');
     setTimeout(function() {
+        console.log('[날짜] setTimeout 콜백 시작');
         var rvContainer = document.getElementById('roadview');
-        if (!rvContainer) return;
+        if (!rvContainer) {
+            console.log('[날짜] 로드뷰 컨테이너 없음');
+            return;
+        }
+        console.log('[날짜] 로드뷰 컨테이너 찾음');
 
         // 현재 로드뷰 위치 저장 및 디버그 정보
         if (roadview) {
