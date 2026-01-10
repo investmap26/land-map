@@ -2237,9 +2237,9 @@ function init() {
             return;
         }
 
-        // 검색 마커/인포윈도우 제거
-        if (typeof clearSearchMarker === 'function') {
-            clearSearchMarker();
+        // 검색 인포윈도우만 닫기 (마커는 유지)
+        if (typeof closeSearchInfowindow === 'function') {
+            closeSearchInfowindow();
         }
     });
 
@@ -2999,7 +2999,7 @@ function performSearch() {
 var searchMarker = null;
 var searchInfowindow = null;
 
-// 검색 마커 제거 함수
+// 검색 마커 완전 제거 함수 (새 검색 시 사용)
 function clearSearchMarker() {
     if (searchMarker) {
         searchMarker.setMap(null);
@@ -3010,7 +3010,15 @@ function clearSearchMarker() {
         searchInfowindow = null;
     }
 }
-window.clearSearchMarker = clearSearchMarker;
+
+// 인포윈도우만 닫기 (마커는 유지)
+function closeSearchInfowindow() {
+    if (searchInfowindow) {
+        searchInfowindow.close();
+        searchInfowindow = null;
+    }
+}
+window.clearSearchMarker = closeSearchInfowindow;  // X버튼은 인포윈도우만 닫기
 
 function goToAuction(lat, lng, address, caseNo, price, auctionType) {
     map.setCenter(new kakao.maps.LatLng(lat, lng));
