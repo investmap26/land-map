@@ -2924,11 +2924,60 @@ function showRoadview(lat, lng) {
         roadview.setPanoId(panoId, position);
         console.log('[showRoadview] setPanoId 호출 후');
 
-        // 1초 후 직접 날짜 업데이트 호출 (이벤트 백업)
+        // 1.5초 후 직접 정보 패널 생성 (이벤트 무시하고 직접 실행)
         setTimeout(function() {
-            console.log('[showRoadview] setTimeout에서 updateRoadviewDate 직접 호출');
-            updateRoadviewDate();
-        }, 1000);
+            console.log('[showRoadview] 정보 패널 직접 생성 시작');
+            var rvContainer = document.getElementById('roadview');
+            if (!rvContainer) {
+                console.log('[showRoadview] 로드뷰 컨테이너 없음!');
+                return;
+            }
+
+            // 기존 패널 제거
+            var oldPanel = document.getElementById('rv-info-panel');
+            if (oldPanel) oldPanel.remove();
+
+            // 새 패널 생성
+            var infoPanel = document.createElement('div');
+            infoPanel.id = 'rv-info-panel';
+            infoPanel.style.cssText = 'position:absolute;bottom:20px;left:20px;background:rgba(0,0,0,0.85);color:#fff;padding:12px 16px;border-radius:8px;font-size:13px;z-index:1000001;font-family:Pretendard,sans-serif;';
+
+            // 이미지에서 날짜 추출 시도
+            var dateText = '촬영일: 확인 중...';
+            var imgs = rvContainer.querySelectorAll('img');
+            console.log('[showRoadview] 총 이미지 수:', imgs.length);
+
+            for (var i = 0; i < imgs.length; i++) {
+                var src = imgs[i].src || '';
+                if (src.indexOf('map_roadview') > -1) {
+                    console.log('[showRoadview] 로드뷰 이미지 발견:', src.substring(0, 100));
+                    var match = src.match(/(\d{4})(\d{2})(\d{2})\d{6}/);
+                    if (match) {
+                        dateText = '촬영일: ' + match[1] + '년 ' + parseInt(match[2]) + '월 ' + parseInt(match[3]) + '일';
+                        console.log('[showRoadview] 날짜 추출 성공:', dateText);
+                        break;
+                    }
+                }
+            }
+
+            // 현재 위치 저장
+            if (roadview) {
+                try {
+                    var pos = roadview.getPosition();
+                    window.currentRoadviewLat = pos.getLat();
+                    window.currentRoadviewLng = pos.getLng();
+                } catch(e) {
+                    console.log('[showRoadview] 위치 가져오기 실패:', e);
+                }
+            }
+
+            infoPanel.innerHTML = '<div style="margin-bottom:8px;font-weight:500;">' + dateText + '</div>' +
+                '<button onclick="openKakaoMapRoadview()" style="background:#fee500;color:#000;border:none;padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;">' +
+                '🗺️ 카카오맵에서 보기</button>';
+
+            rvContainer.appendChild(infoPanel);
+            console.log('[showRoadview] 정보 패널 추가 완료');
+        }, 1500);
     });
 }
 
