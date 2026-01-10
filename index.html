@@ -2808,11 +2808,23 @@ function updateRoadviewDate() {
         var rvContainer = document.getElementById('roadview');
         if (!rvContainer) return;
 
-        // 현재 로드뷰 위치 저장
+        // 현재 로드뷰 위치 저장 및 디버그 정보
         if (roadview) {
             var pos = roadview.getPosition();
             window.currentRoadviewLat = pos.getLat();
             window.currentRoadviewLng = pos.getLng();
+
+            // 디버그: roadview 객체 정보 출력
+            console.log('[날짜] panoId:', roadview.getPanoId());
+            console.log('[날짜] viewpoint:', roadview.getViewpoint());
+            console.log('[날짜] position:', pos.getLat(), pos.getLng());
+
+            // roadview 객체의 모든 속성 확인
+            for (var key in roadview) {
+                if (typeof roadview[key] !== 'function') {
+                    console.log('[날짜] roadview.' + key + ':', roadview[key]);
+                }
+            }
         }
 
         // 정보 패널이 없으면 생성
@@ -2827,15 +2839,22 @@ function updateRoadviewDate() {
         // 이미지 URL에서 날짜 추출
         var dateText = '촬영일: 정보 없음';
         var imgs = rvContainer.querySelectorAll('img[src*="map_roadview"]');
+        console.log('[날짜] 이미지 수:', imgs.length);
 
         if (imgs.length > 0) {
             var imgSrc = imgs[0].src;
-            var dateMatch = imgSrc.match(/map_roadview\/(\d{4})\/(\d{2})\/.*\/(\d{4})(\d{2})(\d{2})/);
+            console.log('[날짜] 첫번째 이미지 URL:', imgSrc);
+
+            // 여러 패턴 시도
+            var dateMatch = imgSrc.match(/(\d{4})(\d{2})(\d{2})\d{6}/);
             if (dateMatch) {
-                var year = dateMatch[3];
-                var month = parseInt(dateMatch[4]);
-                var day = parseInt(dateMatch[5]);
+                var year = dateMatch[1];
+                var month = parseInt(dateMatch[2]);
+                var day = parseInt(dateMatch[3]);
                 dateText = '촬영일: ' + year + '년 ' + month + '월 ' + day + '일';
+                console.log('[날짜] 추출 성공:', dateText);
+            } else {
+                console.log('[날짜] 패턴 매칭 실패');
             }
         }
 
@@ -2843,7 +2862,7 @@ function updateRoadviewDate() {
         infoPanel.innerHTML = '<div style="font-weight:500;">' + dateText + '</div>' +
             '<button onclick="openKakaoMapRoadview()" style="background:#fee500;color:#000;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">' +
             '<span style="font-size:14px;">🗺️</span> 카카오맵에서 보기 (과거사진)</button>';
-    }, 500);
+    }, 800);
 }
 
 // 카카오맵 로드뷰 페이지 열기 (타임머신 지원)
