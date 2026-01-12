@@ -233,10 +233,12 @@
             position: fixed;
             bottom: 70px;
             right: 20px;
-            width: 320px;
-            background: #fff;
+            width: 380px;
+            max-width: 90vw;
+            background: #1f2937;
+            color: #fff;
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
             z-index: 1000;
             display: none;
             font-family: 'Pretendard', sans-serif;
@@ -245,7 +247,6 @@
         .fixed-info-panel-content {
             padding: 16px;
             font-size: 13px;
-            color: #333;
         }
         .fixed-info-panel .close-btn {
             position: absolute;
@@ -255,9 +256,9 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
-            color: #999;
+            color: rgba(255,255,255,0.6);
         }
-        .fixed-info-panel .close-btn:hover { color: #333; }
+        .fixed-info-panel .close-btn:hover { color: #fff; }
         .search-result-item {
             padding: 12px 16px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -859,6 +860,12 @@
                onkeyup="handleSearchKeyup(event)">
         <button class="search-btn" onclick="performSearch()">검색</button>
         <div class="search-results" id="search-results"></div>
+    </div>
+
+    <!-- 고정 상세정보 패널 -->
+    <div class="fixed-info-panel" id="fixed-info-panel">
+        <button class="close-btn" onclick="closeFixedPanel()">&times;</button>
+        <div class="fixed-info-panel-content" id="fixed-info-content"></div>
     </div>
 
     <button class="favorites-toggle" onclick="toggleFavorites()">
@@ -3252,22 +3259,15 @@ function goToAuction(lat, lng, address, caseNo, price, auctionType) {
         map: map
     });
 
-    // 인포윈도우 표시
+    // 고정 패널에 표시 (InfoWindow 대신)
     var typeLabel = auctionType || '경매';
     var typeColor = typeLabel === '공매' ? '#f59e0b' : '#6366f1';
-    var content = '<div style="padding:10px;font-size:12px;min-width:200px;position:relative;">' +
-                  '<button onclick="window.clearSearchMarker()" style="position:absolute;top:5px;right:5px;background:none;border:none;font-size:16px;cursor:pointer;color:#999;">&times;</button>' +
-                  '<strong style="color:' + typeColor + ';">' + typeLabel + '</strong><br>' +
-                  '<div style="margin-top:5px;">' + address + '</div>' +
-                  (caseNo ? '<div style="color:#666;margin-top:3px;">' + caseNo + '</div>' : '') +
-                  (price ? '<div style="color:#ef4444;font-weight:bold;margin-top:3px;">' + price + '</div>' : '') +
-                  '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>' +
-                  '</div>';
-
-    searchInfowindow = new kakao.maps.InfoWindow({
-        content: content
-    });
-    searchInfowindow.open(map, searchMarker);
+    var panelHtml = '<div style="font-weight:700;color:' + typeColor + ';font-size:16px;margin-bottom:10px;">' + typeLabel + '</div>' +
+                    '<div style="font-size:14px;margin-bottom:8px;">' + address + '</div>' +
+                    (caseNo ? '<div style="color:#888;margin-bottom:6px;">' + caseNo + '</div>' : '') +
+                    (price ? '<div style="color:#ef4444;font-weight:700;font-size:15px;margin-bottom:10px;">' + price + '</div>' : '') +
+                    '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="padding:10px 20px;background:#3b82f6;border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;">로드뷰</button>';
+    showFixedPanel(panelHtml);
 }
 
 function goToLocation(lat, lng, name) {
@@ -3285,17 +3285,10 @@ function goToLocation(lat, lng, name) {
         map: map
     });
 
-    // 인포윈도우 표시
-    var content = '<div style="padding:10px;font-size:12px;min-width:150px;position:relative;">' +
-                  '<button onclick="window.clearSearchMarker()" style="position:absolute;top:5px;right:5px;background:none;border:none;font-size:16px;cursor:pointer;color:#999;">&times;</button>' +
-                  '<strong>' + name + '</strong>' +
-                  '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="margin-top:8px;padding:5px 10px;background:#3b82f6;border:none;border-radius:4px;color:#fff;font-size:11px;cursor:pointer;display:block;">로드뷰</button>' +
-                  '</div>';
-
-    searchInfowindow = new kakao.maps.InfoWindow({
-        content: content
-    });
-    searchInfowindow.open(map, searchMarker);
+    // 고정 패널에 표시 (InfoWindow 대신)
+    var panelHtml = '<div style="font-weight:700;font-size:16px;margin-bottom:12px;">' + name + '</div>' +
+                    '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="padding:10px 20px;background:#3b82f6;border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;">로드뷰</button>';
+    showFixedPanel(panelHtml);
 }
 
 // 검색 결과 외부 클릭 시 닫기
