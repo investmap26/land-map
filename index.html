@@ -1428,7 +1428,7 @@ function checkFilter(data) {
     if (filterStartDate || filterEndDate) {
         var itemDate = parseDateString(data.date);
         if (!itemDate) {
-            return false;  // 날짜 파싱 실패하면 제외
+            return true;  // 날짜 필드 없으면 필터 통과 (표시)
         }
         
         // 날짜만 비교 (시간 제거)
