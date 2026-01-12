@@ -1340,14 +1340,18 @@ function applyFilter() {
     console.log('[필터] 적용 - 타입:', currentAuctionType, '| 시작:', startDateVal, '| 종료:', endDateVal);
 
     // 데이터가 로드되지 않았으면 먼저 로드
-    var needLoad = !exactLoaded || !nearby500Loaded || !nearby1kmLoaded;
+    var needLoad = !exactLoaded || !nearby500Loaded || !nearby1kmLoaded || !auctionLoaded || !publicLoaded;
     if (needLoad) {
         console.log('[필터] 데이터 로드 중...');
         loadExactMatchData(function() {
             loadNearby500Data(function() {
                 loadNearby1kmData(function() {
-                    console.log('[필터] 데이터 로드 완료, 필터 적용');
-                    doApplyFilter();
+                    loadAuctionData(function() {
+                        loadPublicData(function() {
+                            console.log('[필터] 데이터 로드 완료, 필터 적용');
+                            doApplyFilter();
+                        });
+                    });
                 });
             });
         });
@@ -1431,7 +1435,29 @@ function doApplyFilter() {
             if (visible) filteredCount++;
         });
     }
-    
+
+    // 경매 마커 필터링
+    if (markers && markers.auction) {
+        markers.auction.forEach(function(marker) {
+            totalCount++;
+            var data = marker._data;
+            var visible = checkFilter(data);
+            marker.setMap(visible ? map : null);
+            if (visible) filteredCount++;
+        });
+    }
+
+    // 공매 마커 필터링
+    if (markers && markers.public) {
+        markers.public.forEach(function(marker) {
+            totalCount++;
+            var data = marker._data;
+            var visible = checkFilter(data);
+            marker.setMap(visible ? map : null);
+            if (visible) filteredCount++;
+        });
+    }
+
     console.log('[필터] 결과:', filteredCount + '/' + totalCount + '건');
     console.log('[필터] 샘플:', debugSamples);
     document.getElementById('filtered-count').textContent = filteredCount.toLocaleString();
@@ -1519,7 +1545,13 @@ function resetFilter() {
     if (typeof polygons !== 'undefined' && polygons.nearby1km) {
         polygons.nearby1km.forEach(function(p) { p.setMap(map); });
     }
-    
+    if (markers && markers.auction) {
+        markers.auction.forEach(function(m) { m.setMap(map); });
+    }
+    if (markers && markers.public) {
+        markers.public.forEach(function(m) { m.setMap(map); });
+    }
+
     document.getElementById('filtered-count').textContent = '-';
     console.log('[필터] 초기화됨');
 }
@@ -2564,6 +2596,7 @@ function loadAuctionData(callback) {
                     var m = createMarkerNoMap(d.lat, d.lng, COLORS.auction, "auction");
                     var info = createAuctionInfo(d, "경매");
                     addClickEvent(m, info, d);
+                    m._data = d;  // 필터링용 데이터 저장
                     markers.auction.push(m);
                     auctionDataByMarker.set(m, d);
                 }
@@ -2607,6 +2640,7 @@ function loadPublicData(callback) {
                     var m = createMarkerNoMap(d.lat, d.lng, COLORS.public, "public");
                     var info = createAuctionInfo(d, "공매");
                     addClickEvent(m, info, d);
+                    m._data = d;  // 필터링용 데이터 저장
                     markers.public.push(m);
                     auctionDataByMarker.set(m, d);
                 }
