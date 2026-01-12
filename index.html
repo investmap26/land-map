@@ -1344,15 +1344,19 @@ function applyFilter() {
 
     console.log('[필터] 적용 - 타입:', currentAuctionType, '| 시작:', startDateVal, '| 종료:', endDateVal);
 
-    // 데이터가 로드되지 않았으면 먼저 로드 (완전일치/500m/1km만 - 경매/공매는 필터 대상 아님)
-    var needLoad = !exactLoaded || !nearby500Loaded || !nearby1kmLoaded;
+    // 데이터가 로드되지 않았으면 먼저 로드 (완전일치/500m/1km + 경매/공매)
+    var needLoad = !exactLoaded || !nearby500Loaded || !nearby1kmLoaded || !auctionLoaded || !publicLoaded;
     if (needLoad) {
         console.log('[필터] 데이터 로드 중...');
         loadExactMatchData(function() {
             loadNearby500Data(function() {
                 loadNearby1kmData(function() {
-                    console.log('[필터] 데이터 로드 완료, 필터 적용');
-                    doApplyFilter();
+                    loadAuctionData(function() {
+                        loadPublicData(function() {
+                            console.log('[필터] 데이터 로드 완료, 필터 적용');
+                            doApplyFilter();
+                        });
+                    });
                 });
             });
         });
@@ -1437,7 +1441,27 @@ function doApplyFilter() {
         });
     }
 
-    // 경매/공매는 필터 대상에서 제외 (줌 레벨로만 표시 제어)
+    // 경매 마커 필터링 (필터 적용 시에만 표시)
+    if (markers && markers.auction) {
+        markers.auction.forEach(function(marker) {
+            totalCount++;
+            var data = marker._data;
+            var visible = checkFilter(data);
+            marker.setMap(visible ? map : null);
+            if (visible) filteredCount++;
+        });
+    }
+
+    // 공매 마커 필터링 (필터 적용 시에만 표시)
+    if (markers && markers.public) {
+        markers.public.forEach(function(marker) {
+            totalCount++;
+            var data = marker._data;
+            var visible = checkFilter(data);
+            marker.setMap(visible ? map : null);
+            if (visible) filteredCount++;
+        });
+    }
 
     // 카테고리별 통계 로깅
     var gyungmaeCount = 0, gongmaeCount = 0;
@@ -1539,7 +1563,7 @@ function resetFilter() {
         btn.classList.remove('active');
     });
     
-    // 완전일치/500m/1km 마커/폴리곤 표시 (경매/공매는 줌 레벨로만 제어)
+    // 완전일치/500m/1km 마커/폴리곤 표시
     if (markers && markers.exact) {
         markers.exact.forEach(function(m) { m.setMap(map); });
     }
@@ -1549,7 +1573,13 @@ function resetFilter() {
     if (typeof polygons !== 'undefined' && polygons.nearby1km) {
         polygons.nearby1km.forEach(function(p) { p.setMap(map); });
     }
-    // 경매/공매는 줌 레벨에 따라 자동 표시됨 (updateAuctionVisibility)
+    // 경매/공매 마커 숨김 (필터 적용 시에만 표시)
+    if (markers && markers.auction) {
+        markers.auction.forEach(function(m) { m.setMap(null); });
+    }
+    if (markers && markers.public) {
+        markers.public.forEach(function(m) { m.setMap(null); });
+    }
 
     document.getElementById('filtered-count').textContent = '-';
     console.log('[필터] 초기화됨');
