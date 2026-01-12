@@ -218,13 +218,14 @@
         }
         .search-btn:hover { transform: scale(1.02); }
         .search-results {
-            position: absolute; bottom: 100%; left: 0; right: 0;
+            position: fixed; bottom: 70px; right: 24px;
+            width: 350px;
             background: rgba(12, 12, 16, 0.98);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
-            margin-bottom: 8px;
             max-height: 300px; overflow-y: auto;
             display: none;
+            z-index: 1000;
         }
         .search-results.active { display: block; }
         .search-result-item {
