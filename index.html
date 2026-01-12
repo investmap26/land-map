@@ -1284,13 +1284,23 @@ function formatDateForInput(date) {
 }
 
 // 날짜 문자열 파싱
-// 형식1: "26.01.15(목)" -> YY.MM.DD (경매)
-// 형식2: "01.05(월)14:00 ~ 01.07(수)17:00" -> MM.DD (공매)
+// 형식1: "2025.12.29" -> YYYY.MM.DD (JSON 데이터)
+// 형식2: "26.01.15(목)" -> YY.MM.DD (경매)
+// 형식3: "01.05(월)14:00 ~ 01.07(수)17:00" -> MM.DD (공매)
 function parseDateString(dateStr) {
     if (!dateStr) return null;
 
-    // 형식1: YY.MM.DD(요일) - "26.01.15(목)" 또는 "25.12.23(화)"
-    var match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{2})/);
+    // 형식1: YYYY.MM.DD - "2025.12.29" 또는 "2026.01.15"
+    var match = dateStr.match(/^(\d{4})\.(\d{2})\.(\d{2})/);
+    if (match) {
+        var year = parseInt(match[1]);
+        var month = parseInt(match[2]) - 1;
+        var day = parseInt(match[3]);
+        return new Date(year, month, day);
+    }
+
+    // 형식2: YY.MM.DD(요일) - "26.01.15(목)" 또는 "25.12.23(화)"
+    match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{2})/);
     if (match) {
         var year = 2000 + parseInt(match[1]);
         var month = parseInt(match[2]) - 1;
@@ -1298,7 +1308,7 @@ function parseDateString(dateStr) {
         return new Date(year, month, day);
     }
 
-    // 형식2: MM.DD(요일) - "01.05(월)14:00 ~ 01.07(수)17:00"
+    // 형식3: MM.DD(요일) - "01.05(월)14:00 ~ 01.07(수)17:00"
     match = dateStr.match(/^(\d{1,2})\.(\d{1,2})/);
     if (match) {
         var month = parseInt(match[1]) - 1;
