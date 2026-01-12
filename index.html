@@ -2630,7 +2630,7 @@ function loadNearby1kmData(callback) {
     if (nearby1kmLoaded) { if(callback) callback(); return; }
     console.log("1km 이내 폴리곤 데이터 로딩...");
 
-    fetch("data_nearby1km_polygons.json?v=202601052040")
+    fetch("data_nearby1km_polygons.json?v=20260112fix")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
