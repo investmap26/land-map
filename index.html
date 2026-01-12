@@ -1237,6 +1237,8 @@ function setAuctionType(type) {
         tab.classList.remove('active');
         if (tab.dataset.type === type) tab.classList.add('active');
     });
+    // 탭 클릭 시 자동 필터 적용
+    applyFilter();
 }
 
 // 빠른 날짜 선택
@@ -1437,6 +1439,27 @@ function doApplyFilter() {
 
     // 경매/공매는 필터 대상에서 제외 (줌 레벨로만 표시 제어)
 
+    // 카테고리별 통계 로깅
+    var gyungmaeCount = 0, gongmaeCount = 0;
+    if (markers && markers.exact) {
+        markers.exact.forEach(function(m) {
+            if (m._data && m._data.category === '경매') gyungmaeCount++;
+            if (m._data && m._data.category === '공매') gongmaeCount++;
+        });
+    }
+    if (typeof polygons !== 'undefined' && polygons.nearby500) {
+        polygons.nearby500.forEach(function(p) {
+            if (p._data && p._data.category === '경매') gyungmaeCount++;
+            if (p._data && p._data.category === '공매') gongmaeCount++;
+        });
+    }
+    if (typeof polygons !== 'undefined' && polygons.nearby1km) {
+        polygons.nearby1km.forEach(function(p) {
+            if (p._data && p._data.category === '경매') gyungmaeCount++;
+            if (p._data && p._data.category === '공매') gongmaeCount++;
+        });
+    }
+    console.log('[필터] 전체 경매:', gyungmaeCount, '공매:', gongmaeCount);
     console.log('[필터] 결과:', filteredCount + '/' + totalCount + '건 (완전일치/500m/1km)');
     console.log('[필터] 샘플:', debugSamples);
     document.getElementById('filtered-count').textContent = filteredCount.toLocaleString();
@@ -1445,29 +1468,31 @@ function doApplyFilter() {
 // 개별 데이터 필터 체크
 function checkFilter(data) {
     if (!data) return true;
-    
+
     // 경매/공매 타입 체크
     if (currentAuctionType !== 'all') {
-        var isGongmae = false;
-        
-        // 공매 판별: date에 ~ 포함 (입찰기간 형식)
-        if (data.date && data.date.includes('~')) {
-            isGongmae = true;
-        }
-        // case_no 패턴으로 판별
-        if (data.case_no) {
-            if (data.case_no.includes('캠코') || data.case_no.includes('공매')) {
+        // category 필드로 직접 판별 (가장 정확)
+        var itemCategory = data.category || '';
+        var isGongmae = (itemCategory === '공매');
+
+        // category가 없으면 다른 방법으로 판별
+        if (!itemCategory) {
+            // 공매 판별: date에 ~ 포함 (입찰기간 형식)
+            if (data.date && data.date.includes('~')) {
                 isGongmae = true;
             }
-            // 공매 사건번호 패턴: 2024-00001 형식
-            if (/^\d{4}-\d{5}/.test(data.case_no)) {
-                isGongmae = true;
+            // case_no 패턴으로 판별
+            if (data.case_no) {
+                if (data.case_no.includes('캠코') || data.case_no.includes('공매')) {
+                    isGongmae = true;
+                }
+                // 공매 사건번호 패턴: 2024-00001 형식
+                if (/^\d{4}-\d{5}/.test(data.case_no)) {
+                    isGongmae = true;
+                }
             }
         }
-        if (data.category === '공매') {
-            isGongmae = true;
-        }
-        
+
         if (currentAuctionType === 'gongmae' && !isGongmae) return false;
         if (currentAuctionType === 'auction' && isGongmae) return false;
     }
