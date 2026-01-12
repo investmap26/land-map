@@ -1367,6 +1367,12 @@ function applyFilter() {
 
 // 실제 필터 적용 (데이터 로드 후)
 function doApplyFilter() {
+    console.log('=== 필터 데이터 현황 ===');
+    console.log('markers.exact:', markers && markers.exact ? markers.exact.length : 0);
+    console.log('polygons.nearby500:', typeof polygons !== 'undefined' && polygons.nearby500 ? polygons.nearby500.length : 0);
+    console.log('polygons.nearby1km:', typeof polygons !== 'undefined' && polygons.nearby1km ? polygons.nearby1km.length : 0);
+    console.log('markers.auction:', markers && markers.auction ? markers.auction.length : 0);
+    console.log('markers.public:', markers && markers.public ? markers.public.length : 0);
     console.log('=== 데이터 구조 확인 ===');
     if (markers && markers.exact && markers.exact[0]) {
         console.log('markers.exact[0]._data 전체:', JSON.stringify(markers.exact[0]._data, null, 2));
@@ -1483,8 +1489,8 @@ function doApplyFilter() {
             if (p._data && p._data.category === '공매') gongmaeCount++;
         });
     }
-    console.log('[필터] 전체 경매:', gyungmaeCount, '공매:', gongmaeCount);
-    console.log('[필터] 결과:', filteredCount + '/' + totalCount + '건 (완전일치/500m/1km)');
+    console.log('[필터] 카테고리별 - 경매:', gyungmaeCount, '공매:', gongmaeCount);
+    console.log('[필터] 결과:', filteredCount + '/' + totalCount + '건');
     console.log('[필터] 샘플:', debugSamples);
     document.getElementById('filtered-count').textContent = filteredCount.toLocaleString();
 }
