@@ -2671,6 +2671,7 @@ function loadNearby1kmData(callback) {
                     overlay.setMap(map);
                     setTimeout(function() { overlay.setMap(null); }, 12000);
                 });
+                poly._data = d;  // 필터링용 데이터 저장 (버그 수정)
                 polygons.nearby1km.push(poly);
             });
             nearby1kmLoaded = true;
