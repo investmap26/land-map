@@ -1452,34 +1452,42 @@ function doApplyFilter() {
     var auctionFilteredCount = 0;
     var publicFilteredCount = 0;
 
-    // 경매 필터링 (건수만 카운트)
+    // 경매 필터링 (건수만 카운트) - data_auction.json은 모두 경매
     if (markers && markers.auction) {
+        // 공매만 보기 선택 시 경매는 카운트 안 함
+        var includeAuction = (currentAuctionType === 'all' || currentAuctionType === 'auction');
         markers.auction.forEach(function(marker) {
             totalCount++;
-            var data = marker._data;
-            if (checkFilter(data)) {
-                filteredCount++;
-                auctionFilteredCount++;
+            if (includeAuction) {
+                var data = marker._data;
+                if (checkDateFilter(data)) {  // 날짜만 체크
+                    filteredCount++;
+                    auctionFilteredCount++;
+                }
             }
             marker.setMap(null);  // 지도에 표시 안 함
         });
     }
 
-    // 공매 필터링 (건수만 카운트)
+    // 공매 필터링 (건수만 카운트) - data_public.json은 모두 공매
     if (markers && markers.public) {
+        // 경매만 보기 선택 시 공매는 카운트 안 함
+        var includePublic = (currentAuctionType === 'all' || currentAuctionType === 'gongmae');
         markers.public.forEach(function(marker) {
             totalCount++;
-            var data = marker._data;
-            if (checkFilter(data)) {
-                filteredCount++;
-                publicFilteredCount++;
+            if (includePublic) {
+                var data = marker._data;
+                if (checkDateFilter(data)) {  // 날짜만 체크
+                    filteredCount++;
+                    publicFilteredCount++;
+                }
             }
             marker.setMap(null);  // 지도에 표시 안 함
         });
     }
 
     filterApplied = true;
-    console.log('[필터] 경매:', auctionFilteredCount, '건, 공매:', publicFilteredCount, '건 (지도 표시 안 함 - 검색으로 접근)');
+    console.log('[필터] 경매:', auctionFilteredCount, '건, 공매:', publicFilteredCount, '건');
 
     // 카테고리별 통계 로깅
     var gyungmaeCount = 0, gongmaeCount = 0;
@@ -1560,6 +1568,33 @@ function checkFilter(data) {
         }
     }
     
+    return true;
+}
+
+// 날짜만 체크 (경매/공매 타입 체크 없음 - markers.auction, markers.public용)
+function checkDateFilter(data) {
+    if (!data) return true;
+
+    // 날짜 체크
+    if (filterStartDate || filterEndDate) {
+        var itemDate = parseDateString(data.date);
+        if (!itemDate) {
+            return true;  // 날짜 필드 없으면 필터 통과
+        }
+
+        var itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+
+        if (filterStartDate) {
+            var startOnly = new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate());
+            if (itemDateOnly < startOnly) return false;
+        }
+
+        if (filterEndDate) {
+            var endOnly = new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate());
+            if (itemDateOnly > endOnly) return false;
+        }
+    }
+
     return true;
 }
 
