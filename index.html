@@ -1358,7 +1358,14 @@ function applyFilter() {
 
 // 실제 필터 적용 (데이터 로드 후)
 function doApplyFilter() {
-    console.log('=== doApplyFilter 시작 ===');
+    console.log('=== 데이터 구조 확인 ===');
+    if (markers && markers.exact && markers.exact[0]) {
+        console.log('markers.exact[0]._data 전체:', JSON.stringify(markers.exact[0]._data, null, 2));
+    }
+    if (polygons && polygons.nearby500 && polygons.nearby500[0]) {
+        console.log('polygons.nearby500[0]._data 전체:', JSON.stringify(polygons.nearby500[0]._data, null, 2));
+    }
+    console.log('=== 필터 상태 ===');
     console.log('currentAuctionType:', currentAuctionType);
     console.log('filterStartDate:', filterStartDate);
     console.log('filterEndDate:', filterEndDate);
