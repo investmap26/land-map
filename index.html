@@ -1226,6 +1226,7 @@
 <script>
 // ====== 필터 관련 변수 ======
 var currentAuctionType = 'all'; // 'all', 'auction', 'gongmae'
+var filterApplied = false;  // 필터 적용 상태
 var filterStartDate = null;
 var filterEndDate = null;
 var originalMarkers = { exact: [], nearby500: [], nearby1000: [] };
@@ -1447,27 +1448,38 @@ function doApplyFilter() {
         });
     }
 
-    // 경매 마커 필터링 (필터 적용 시에만 표시)
+    // 경매/공매는 건수만 카운트 (지도에 표시 안 함 - 검색으로만 접근)
+    var auctionFilteredCount = 0;
+    var publicFilteredCount = 0;
+
+    // 경매 필터링 (건수만 카운트)
     if (markers && markers.auction) {
         markers.auction.forEach(function(marker) {
             totalCount++;
             var data = marker._data;
-            var visible = checkFilter(data);
-            marker.setMap(visible ? map : null);
-            if (visible) filteredCount++;
+            if (checkFilter(data)) {
+                filteredCount++;
+                auctionFilteredCount++;
+            }
+            marker.setMap(null);  // 지도에 표시 안 함
         });
     }
 
-    // 공매 마커 필터링 (필터 적용 시에만 표시)
+    // 공매 필터링 (건수만 카운트)
     if (markers && markers.public) {
         markers.public.forEach(function(marker) {
             totalCount++;
             var data = marker._data;
-            var visible = checkFilter(data);
-            marker.setMap(visible ? map : null);
-            if (visible) filteredCount++;
+            if (checkFilter(data)) {
+                filteredCount++;
+                publicFilteredCount++;
+            }
+            marker.setMap(null);  // 지도에 표시 안 함
         });
     }
+
+    filterApplied = true;
+    console.log('[필터] 경매:', auctionFilteredCount, '건, 공매:', publicFilteredCount, '건 (지도 표시 안 함 - 검색으로 접근)');
 
     // 카테고리별 통계 로깅
     var gyungmaeCount = 0, gongmaeCount = 0;
@@ -2861,6 +2873,8 @@ function init() {
     kakao.maps.event.addListener(map, 'zoom_changed', function() {
         updateAuctionVisibility();
         updatePublicVisibility();
+        // 필터 적용 상태면 줌 레벨에 따라 필터된 마커 표시/숨김
+        updateFilteredMarkersVisibility();
     });
 
     // 철도
@@ -3268,15 +3282,13 @@ function toggleLayer(category) {
     }
 }
 
-// 경매/공매 줌 레벨 제한 (레벨 9 이하 = 확대 시에만 표시)
-var AUCTION_MIN_ZOOM = 9;
-
+// 경매/공매 클러스터러 표시 (레이어 체크박스용 - 필터와 별개)
 function updateAuctionVisibility() {
     var chk = document.getElementById('layer-auction');
     var show = chk && chk.checked;
     var level = map.getLevel();
 
-    if (show && level <= AUCTION_MIN_ZOOM && clusterers.auction) {
+    if (show && level <= AUCTION_MIN_ZOOM && clusterers.auction && !filterApplied) {
         clusterers.auction.setMap(map);
     } else if (clusterers.auction) {
         clusterers.auction.setMap(null);
@@ -3288,11 +3300,16 @@ function updatePublicVisibility() {
     var show = chk && chk.checked;
     var level = map.getLevel();
 
-    if (show && level <= AUCTION_MIN_ZOOM && clusterers.public) {
+    if (show && level <= AUCTION_MIN_ZOOM && clusterers.public && !filterApplied) {
         clusterers.public.setMap(map);
     } else if (clusterers.public) {
         clusterers.public.setMap(null);
     }
+}
+
+// 필터 적용 상태 관리 (경매/공매는 지도에 표시 안 함)
+function updateFilteredMarkersVisibility() {
+    // 경매/공매는 검색으로만 접근 - 지도에 표시 안 함
 }
 
 function setMapType(type) {
