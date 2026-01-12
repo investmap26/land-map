@@ -1358,15 +1358,24 @@ function applyFilter() {
 
 // 실제 필터 적용 (데이터 로드 후)
 function doApplyFilter() {
+    console.log('=== doApplyFilter 시작 ===');
+    console.log('currentAuctionType:', currentAuctionType);
+    console.log('filterStartDate:', filterStartDate);
+    console.log('filterEndDate:', filterEndDate);
+    console.log('markers.exact 길이:', markers && markers.exact ? markers.exact.length : 'undefined');
+    console.log('polygons.nearby500 길이:', typeof polygons !== 'undefined' && polygons.nearby500 ? polygons.nearby500.length : 'undefined');
+    console.log('polygons.nearby1km 길이:', typeof polygons !== 'undefined' && polygons.nearby1km ? polygons.nearby1km.length : 'undefined');
+
     var filteredCount = 0;
     var totalCount = 0;
     var debugSamples = [];
     var passedCount = 0;
     var failedDateCount = 0;
     var failedTypeCount = 0;
-    
+
     // 완전일치 마커 필터링
     if (markers && markers.exact) {
+        console.log('markers.exact[0]._data:', markers.exact[0] ? markers.exact[0]._data : 'empty');
         markers.exact.forEach(function(marker) {
             totalCount++;
             var data = marker._data;
