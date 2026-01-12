@@ -2659,8 +2659,11 @@ function loadNearby1kmData(callback) {
 }
 
 // [삭제됨] 경매 데이터 로드 함수
+var auctionLoading = false;  // 로딩 중 플래그
 function loadAuctionData(callback) {
     if (auctionLoaded) { callback(); return; }
+    if (auctionLoading) { callback(); return; }  // 이미 로딩 중이면 리턴
+    auctionLoading = true;
     console.log("경매 데이터 로딩...");
     fetch("data_auction.json?v=20260105")
         .then(function(r) { return r.json(); })
@@ -2703,8 +2706,11 @@ function loadAuctionData(callback) {
 }
 
 // 공매 데이터 로드 함수 (배치 처리로 UI 블로킹 방지)
+var publicLoading = false;  // 로딩 중 플래그
 function loadPublicData(callback) {
     if (publicLoaded) { callback(); return; }
+    if (publicLoading) { callback(); return; }  // 이미 로딩 중이면 리턴
+    publicLoading = true;
     console.log("공매 데이터 로딩...");
     fetch("data_public.json?v=20260105")
         .then(function(r) { return r.json(); })
