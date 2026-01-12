@@ -1389,8 +1389,8 @@ function applyFilter() {
     }
     
     // 1km 폴리곤 필터링
-    if (typeof polygons !== 'undefined' && polygons.nearby1000) {
-        polygons.nearby1000.forEach(function(poly) {
+    if (typeof polygons !== 'undefined' && polygons.nearby1km) {
+        polygons.nearby1km.forEach(function(poly) {
             totalCount++;
             var data = poly._data;
             var visible = checkFilter(data);
@@ -1483,8 +1483,8 @@ function resetFilter() {
     if (typeof polygons !== 'undefined' && polygons.nearby500) {
         polygons.nearby500.forEach(function(p) { p.setMap(map); });
     }
-    if (typeof polygons !== 'undefined' && polygons.nearby1000) {
-        polygons.nearby1000.forEach(function(p) { p.setMap(map); });
+    if (typeof polygons !== 'undefined' && polygons.nearby1km) {
+        polygons.nearby1km.forEach(function(p) { p.setMap(map); });
     }
     
     document.getElementById('filtered-count').textContent = '-';
