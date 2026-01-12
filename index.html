@@ -233,11 +233,11 @@
             position: fixed;
             bottom: 70px;
             right: 20px;
-            width: 380px;
+            width: 300px;
             max-width: 90vw;
             background: #1f2937;
             color: #fff;
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.6);
             z-index: 1000;
             display: none;
@@ -245,13 +245,13 @@
         }
         .fixed-info-panel.active { display: block; }
         .fixed-info-panel-content {
-            padding: 16px;
-            font-size: 13px;
+            padding: 12px;
+            font-size: 12px;
         }
         .fixed-info-panel .close-btn {
             position: absolute;
-            top: 10px;
-            right: 12px;
+            top: 6px;
+            right: 8px;
             background: none;
             border: none;
             font-size: 20px;
@@ -265,33 +265,33 @@
             position: fixed;
             top: 120px;
             right: 20px;
-            width: 260px;
+            width: 240px;
             background: linear-gradient(160deg, rgba(22, 22, 30, 0.97), rgba(15, 15, 20, 0.99));
             backdrop-filter: blur(40px) saturate(200%);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 10px;
             z-index: 200;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             font-family: 'Pretendard', sans-serif;
         }
         .filter-panel-title {
             color: #fff;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         /* 경매/공매 탭 */
         .auction-tabs {
             display: flex;
-            gap: 4px;
-            margin-bottom: 10px;
+            gap: 3px;
+            margin-bottom: 8px;
         }
         .auction-tab {
             flex: 1;
-            padding: 6px 0;
+            padding: 5px 0;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 8px;
@@ -314,8 +314,8 @@
         /* 날짜 입력 */
         .date-inputs {
             display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 4px;
+            margin-bottom: 6px;
         }
         .date-input-group {
             flex: 1;
@@ -345,8 +345,8 @@
         /* 빠른 선택 버튼 */
         .quick-select {
             display: flex;
-            gap: 4px;
-            margin-bottom: 10px;
+            gap: 3px;
+            margin-bottom: 8px;
             flex-wrap: wrap;
         }
         .quick-btn {
@@ -404,8 +404,8 @@
         }
         /* 필터 결과 카운트 */
         .filter-count {
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 6px;
+            padding-top: 6px;
             border-top: 1px solid rgba(255,255,255,0.1);
             color: rgba(255,255,255,0.5);
             font-size: 11px;
@@ -3622,49 +3622,55 @@ function closeSearchInfowindow() {
 window.clearSearchMarker = closeSearchInfowindow;  // X버튼은 인포윈도우만 닫기
 
 function goToAuction(lat, lng, address, caseNo, price, auctionType) {
-    map.setCenter(new kakao.maps.LatLng(lat, lng));
-    map.setLevel(3);
+    var pos = new kakao.maps.LatLng(lat, lng);
     document.getElementById('search-results').classList.remove('active');
     document.getElementById('search-input').value = caseNo || address;
 
     // 이전 마커 제거
     clearSearchMarker();
 
+    // 지도 중심 이동 및 줌
+    map.setLevel(3);
+    map.panTo(pos);
+
     // 경공매 물건 위치에 마커 표시
     searchMarker = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(lat, lng),
+        position: pos,
         map: map
     });
 
     // 고정 패널에 표시 (InfoWindow 대신)
     var typeLabel = auctionType || '경매';
     var typeColor = typeLabel === '공매' ? '#f59e0b' : '#6366f1';
-    var panelHtml = '<div style="font-weight:700;color:' + typeColor + ';font-size:16px;margin-bottom:10px;">' + typeLabel + '</div>' +
-                    '<div style="font-size:14px;margin-bottom:8px;">' + address + '</div>' +
-                    (caseNo ? '<div style="color:#888;margin-bottom:6px;">' + caseNo + '</div>' : '') +
-                    (price ? '<div style="color:#ef4444;font-weight:700;font-size:15px;margin-bottom:10px;">' + price + '</div>' : '') +
-                    '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="padding:10px 20px;background:#3b82f6;border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;">로드뷰</button>';
+    var panelHtml = '<div style="font-weight:600;color:' + typeColor + ';font-size:14px;margin-bottom:6px;">' + typeLabel + '</div>' +
+                    '<div style="font-size:12px;margin-bottom:5px;">' + address + '</div>' +
+                    (caseNo ? '<div style="color:#888;font-size:11px;margin-bottom:4px;">' + caseNo + '</div>' : '') +
+                    (price ? '<div style="color:#ef4444;font-weight:600;font-size:13px;margin-bottom:8px;">' + price + '</div>' : '') +
+                    '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="padding:6px 14px;background:#3b82f6;border:none;border-radius:6px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>';
     showFixedPanel(panelHtml);
 }
 
 function goToLocation(lat, lng, name) {
-    map.setCenter(new kakao.maps.LatLng(lat, lng));
-    map.setLevel(3);
+    var pos = new kakao.maps.LatLng(lat, lng);
     document.getElementById('search-results').classList.remove('active');
     document.getElementById('search-input').value = name;
 
     // 이전 마커 제거
     clearSearchMarker();
 
+    // 지도 중심 이동 및 줌
+    map.setLevel(3);
+    map.panTo(pos);
+
     // 검색 위치에 마커 표시
     searchMarker = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(lat, lng),
+        position: pos,
         map: map
     });
 
     // 고정 패널에 표시 (InfoWindow 대신)
-    var panelHtml = '<div style="font-weight:700;font-size:16px;margin-bottom:12px;">' + name + '</div>' +
-                    '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="padding:10px 20px;background:#3b82f6;border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;">로드뷰</button>';
+    var panelHtml = '<div style="font-weight:600;font-size:14px;margin-bottom:8px;">' + name + '</div>' +
+                    '<button onclick="window.showRoadview(' + lat + ',' + lng + ')" style="padding:6px 14px;background:#3b82f6;border:none;border-radius:6px;color:#fff;font-size:11px;cursor:pointer;">로드뷰</button>';
     showFixedPanel(panelHtml);
 }
 
