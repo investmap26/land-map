@@ -1512,6 +1512,20 @@ function doApplyFilter() {
     console.log('[필터] 카테고리별 - 경매:', gyungmaeCount, '공매:', gongmaeCount);
     console.log('[필터] 결과:', filteredCount + '/' + totalCount + '건');
     console.log('[필터] 샘플:', debugSamples);
+
+    // 진단 로그 추가
+    console.log('========== 필터 진단 ==========');
+    console.log('currentAuctionType:', currentAuctionType);
+    console.log('markers.auction.length:', markers.auction ? markers.auction.length : 0);
+    console.log('markers.public.length:', markers.public ? markers.public.length : 0);
+    console.log('markers.exact.length:', markers.exact ? markers.exact.length : 0);
+    console.log('polygons.nearby500.length:', polygons.nearby500 ? polygons.nearby500.length : 0);
+    console.log('polygons.nearby1km.length:', polygons.nearby1km ? polygons.nearby1km.length : 0);
+    console.log('auctionFilteredCount:', auctionFilteredCount);
+    console.log('publicFilteredCount:', publicFilteredCount);
+    console.log('filteredCount (total):', filteredCount);
+    console.log('================================');
+
     document.getElementById('filtered-count').textContent = filteredCount.toLocaleString();
 }
 
@@ -2660,12 +2674,19 @@ function loadNearby1kmData(callback) {
 
 // [삭제됨] 경매 데이터 로드 함수
 var auctionLoading = false;  // 로딩 중 플래그
+var auctionCallbacks = [];   // 대기 중인 콜백 목록
 function loadAuctionData(callback) {
     if (auctionLoaded) { callback(); return; }
-    if (auctionLoading) { callback(); return; }  // 이미 로딩 중이면 리턴
+
+    // 콜백을 대기열에 추가
+    auctionCallbacks.push(callback);
+
+    // 이미 로딩 중이면 리턴 (콜백은 로딩 완료 후 실행됨)
+    if (auctionLoading) { return; }
+
     auctionLoading = true;
     console.log("경매 데이터 로딩...");
-    fetch("data_auction.json?v=20260105")
+    fetch("data_auction.json?v=20260112")
         .then(function(r) { return r.json(); })
         .then(function(data) {
             console.log("경매 데이터 로드 완료:", data.length);
@@ -2697,7 +2718,11 @@ function loadAuctionData(callback) {
                     }
                     auctionLoaded = true;
                     console.log("경매 마커 생성 완료:", markers.auction.length);
-                    callback();
+
+                    // 대기 중인 모든 콜백 실행
+                    var callbacks = auctionCallbacks.slice();
+                    auctionCallbacks = [];
+                    callbacks.forEach(function(cb) { cb(); });
                 }
             }
 
@@ -2707,12 +2732,19 @@ function loadAuctionData(callback) {
 
 // 공매 데이터 로드 함수 (배치 처리로 UI 블로킹 방지)
 var publicLoading = false;  // 로딩 중 플래그
+var publicCallbacks = [];   // 대기 중인 콜백 목록
 function loadPublicData(callback) {
     if (publicLoaded) { callback(); return; }
-    if (publicLoading) { callback(); return; }  // 이미 로딩 중이면 리턴
+
+    // 콜백을 대기열에 추가
+    publicCallbacks.push(callback);
+
+    // 이미 로딩 중이면 리턴 (콜백은 로딩 완료 후 실행됨)
+    if (publicLoading) { return; }
+
     publicLoading = true;
     console.log("공매 데이터 로딩...");
-    fetch("data_public.json?v=20260105")
+    fetch("data_public.json?v=20260112")
         .then(function(r) { return r.json(); })
         .then(function(data) {
             console.log("공매 데이터 로드 완료:", data.length);
@@ -2744,7 +2776,11 @@ function loadPublicData(callback) {
                     }
                     publicLoaded = true;
                     console.log("공매 마커 생성 완료:", markers.public.length);
-                    callback();
+
+                    // 대기 중인 모든 콜백 실행
+                    var callbacks = publicCallbacks.slice();
+                    publicCallbacks = [];
+                    callbacks.forEach(function(cb) { cb(); });
                 }
             }
 
@@ -3771,7 +3807,7 @@ function handleSearchKeyup(e) {
 
 // 경공매 데이터 캐시 (검색용) - 경매+공매 통합
 var auctionSearchCache = null;
-var auctionCacheVersion = '20260108v2';
+var auctionCacheVersion = '20260112';
 
 function performSearch() {
     var query = document.getElementById('search-input').value.trim();
