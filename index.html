@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -2172,12 +2172,6 @@ function init() {
         mapTypeId: kakao.maps.MapTypeId.HYBRID
     });
     window.map = map; // 전역 접근용
-
-    // 검색결과 div를 body로 이동 (position: fixed가 부모 요소에 영향받지 않도록)
-    var searchResults = document.getElementById('search-results');
-    if (searchResults && searchResults.parentElement !== document.body) {
-        document.body.appendChild(searchResults);
-    }
 
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
