@@ -1513,18 +1513,26 @@ function doApplyFilter() {
     console.log('[필터] 결과:', filteredCount + '/' + totalCount + '건');
     console.log('[필터] 샘플:', debugSamples);
 
-    // 진단 로그 추가
+    // 진단 로그
     console.log('========== 필터 진단 ==========');
     console.log('currentAuctionType:', currentAuctionType);
-    console.log('markers.auction.length:', markers.auction ? markers.auction.length : 0);
-    console.log('markers.public.length:', markers.public ? markers.public.length : 0);
-    console.log('markers.exact.length:', markers.exact ? markers.exact.length : 0);
-    console.log('polygons.nearby500.length:', polygons.nearby500 ? polygons.nearby500.length : 0);
-    console.log('polygons.nearby1km.length:', polygons.nearby1km ? polygons.nearby1km.length : 0);
+    console.log('auction 마커:', markers.auction ? markers.auction.length : 0);
+    console.log('public 마커:', markers.public ? markers.public.length : 0);
     console.log('auctionFilteredCount:', auctionFilteredCount);
     console.log('publicFilteredCount:', publicFilteredCount);
-    console.log('filteredCount (total):', filteredCount);
+    console.log('filteredCount:', filteredCount);
     console.log('================================');
+
+    // 화면에 상세 정보 표시
+    var detailText = '경매: ' + auctionFilteredCount.toLocaleString() + ' / 공매: ' + publicFilteredCount.toLocaleString();
+    var detailEl = document.getElementById('filter-detail');
+    if (!detailEl) {
+        detailEl = document.createElement('div');
+        detailEl.id = 'filter-detail';
+        detailEl.style.cssText = 'font-size:11px;color:#9ca3af;margin-top:4px;';
+        document.getElementById('filtered-count').parentNode.appendChild(detailEl);
+    }
+    detailEl.textContent = detailText;
 
     document.getElementById('filtered-count').textContent = filteredCount.toLocaleString();
 }
