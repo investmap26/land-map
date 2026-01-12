@@ -1139,6 +1139,9 @@
 
     <div class="control-panel">
         <div class="panel-header">레이어 컨트롤</div>
+        <div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.1);">
+            <button id="toggle-all-layers" onclick="toggleAllLayers()" style="width:100%;padding:8px 0;background:linear-gradient(135deg,#6366f1,#a855f7);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;">전체 켜기</button>
+        </div>
         <div class="layer-group">
             <div class="layer-title">Infrastructure</div>
             <label class="layer-item">
@@ -1325,10 +1328,15 @@ function applyFilter() {
     filterEndDate = endDateVal ? new Date(endDateVal + 'T23:59:59') : null;
     
     console.log('[필터] 적용 - 타입:', currentAuctionType, '| 시작:', startDateVal, '| 종료:', endDateVal);
+    console.log('[필터] filterStartDate:', filterStartDate);
+    console.log('[필터] filterEndDate:', filterEndDate);
     
     var filteredCount = 0;
     var totalCount = 0;
     var debugSamples = [];
+    var passedCount = 0;
+    var failedDateCount = 0;
+    var failedTypeCount = 0;
     
     // 완전일치 마커 필터링
     if (markers && markers.exact) {
@@ -1339,12 +1347,20 @@ function applyFilter() {
             marker.setMap(visible ? map : null);
             if (visible) filteredCount++;
             
-            // 처음 5개 샘플 로그
-            if (debugSamples.length < 5 && data) {
+            // 처음 10개 샘플 로그
+            if (debugSamples.length < 10 && data) {
                 var parsed = parseDateString(data.date);
+                var inRange = true;
+                if (parsed && filterStartDate) {
+                    inRange = parsed >= filterStartDate;
+                }
+                if (parsed && filterEndDate && inRange) {
+                    inRange = parsed <= filterEndDate;
+                }
                 debugSamples.push({
                     date: data.date,
                     parsed: parsed ? parsed.toISOString().slice(0,10) : 'null',
+                    inRange: inRange,
                     visible: visible
                 });
             }
@@ -2305,6 +2321,11 @@ function loadExactMatchData(callback) {
         })
         .then(function(data) {
             console.log("완전일치 데이터 로드 완료:", data.length);
+            
+            // date 필드 형식 샘플 출력 (디버깅용)
+            var dateSamples = data.slice(0, 10).map(function(d) { return d.date; });
+            console.log("[디버깅] date 필드 샘플:", dateSamples);
+            
             data.forEach(function(d) {
                 if (!d.lat || !d.lng) return;
                 // 마커 생성 (토지목록좌표 기반 - 사업지구 안에 표시됨)
@@ -3026,6 +3047,34 @@ function showParcel(lat, lng, address, areaInfo) {
     document.getElementById('parcel-area').textContent = landArea.toLocaleString() + '㎡';
     document.getElementById('parcel-addr').textContent = address ? address.substring(0, 25) + '...' : '-';
     document.getElementById('parcel-info').classList.add('active');
+}
+
+// 전체 레이어 켜기/끄기 토글
+var allLayersOn = false;
+function toggleAllLayers() {
+    var layers = ['railway', 'highway', 'ic', 'development', 'land', 'exact', 'nearby500', 'nearby1km'];
+    allLayersOn = !allLayersOn;
+    
+    layers.forEach(function(layer) {
+        var checkbox = document.getElementById('layer-' + layer);
+        if (checkbox) {
+            if (allLayersOn && !checkbox.checked) {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change'));
+            } else if (!allLayersOn && checkbox.checked) {
+                checkbox.checked = false;
+                checkbox.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+    
+    var btn = document.getElementById('toggle-all-layers');
+    if (btn) {
+        btn.textContent = allLayersOn ? '전체 끄기' : '전체 켜기';
+        btn.style.background = allLayersOn ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#6366f1,#a855f7)';
+    }
+    
+    console.log('[레이어] 전체', allLayersOn ? 'ON' : 'OFF');
 }
 
 function toggleLayer(category) {
