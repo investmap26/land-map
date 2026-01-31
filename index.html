@@ -2488,7 +2488,7 @@ var publicLoaded = false;
 
 // 완전일치 데이터 로드 함수
 var exactLoaded = false;
-var polygons = { exact: [], nearby500: [], nearby1km: [] };
+var polygons = { exact: [], nearby500: [], nearby1km: [], development: [] };
 function loadExactMatchData(callback) {
     if (exactLoaded) { if(callback) callback(); return; }
     console.log("완전일치 데이터 로딩 (토지목록좌표 기반)...");
@@ -2679,6 +2679,63 @@ function loadNearby1kmData(callback) {
             if(callback) callback();
         })
         .catch(function(e) { console.error("1km 로드 실패:", e); });
+}
+
+// 개발예정지 폴리곤 데이터 로드 함수
+var devPolygonsLoaded = false;
+function loadDevPolygonData(callback) {
+    if (devPolygonsLoaded) { if(callback) callback(); return; }
+    console.log("개발예정지 폴리곤 데이터 로딩...");
+
+    fetch("data_dev_polygons.json?v=202601310001")
+        .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function(data) {
+            var addresses = Object.keys(data);
+            console.log("개발예정지 폴리곤 로드 완료:", addresses.length);
+            addresses.forEach(function(address) {
+                var d = data[address];
+                if (!d.polygon || d.polygon.length < 3) return;
+                var path = d.polygon.map(function(c) {
+                    return new kakao.maps.LatLng(c[1], c[0]);
+                });
+                var poly = new kakao.maps.Polygon({
+                    path: path,
+                    strokeWeight: 2,
+                    strokeColor: '#22c55e',
+                    strokeOpacity: 0.9,
+                    fillColor: '#22c55e',
+                    fillOpacity: 0.25
+                });
+                kakao.maps.event.addListener(poly, 'mouseover', function() {
+                    poly.setOptions({ fillOpacity: 0.5, strokeWeight: 3 });
+                });
+                kakao.maps.event.addListener(poly, 'mouseout', function() {
+                    poly.setOptions({ fillOpacity: 0.25, strokeWeight: 2 });
+                });
+                kakao.maps.event.addListener(poly, 'click', function(mouseEvent) {
+                    if (window.currentDevOverlay) window.currentDevOverlay.setMap(null);
+                    var content = '<div style="position:relative;padding:10px;background:#1f2937;color:#fff;border-radius:8px;font-size:11px;max-width:250px;border:2px solid #22c55e;box-shadow:0 4px 15px rgba(0,0,0,0.5)">' +
+                        '<button onclick="window.closeDevOverlay()" style="position:absolute;top:4px;right:6px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;padding:0;line-height:1">&times;</button>' +
+                        '<div style="font-weight:700;color:#22c55e;margin-bottom:6px;font-size:12px;border-bottom:1px solid #374151;padding-bottom:6px;padding-right:16px">개발예정지</div>' +
+                        '<div style="font-size:11px;line-height:1.4">' + address + '</div>' +
+                        '</div>';
+                    var overlay = new kakao.maps.CustomOverlay({ content: content, position: mouseEvent.latLng, yAnchor: 1.2 });
+                    overlay.setMap(map);
+                    window.currentDevOverlay = overlay;
+                    window.closeDevOverlay = function() { overlay.setMap(null); window.currentDevOverlay = null; };
+                });
+                poly._data = { address: address, lat: d.lat, lng: d.lng };
+                polygons.development.push(poly);
+            });
+            devPolygonsLoaded = true;
+            if(callback) callback();
+        })
+        .catch(function(err) {
+            console.error("개발예정지 폴리곤 로드 에러:", err);
+        });
 }
 
 // [삭제됨] 경매 데이터 로드 함수
@@ -3294,6 +3351,22 @@ function toggleLayer(category) {
     var show = chk.checked;
     console.log('toggleLayer:', category, 'show:', show, 'markers:', markers[category] ? markers[category].length : 0);
 
+    // 개발예정지 lazy loading (마커 + 폴리곤)
+    if (category === 'development') {
+        // 마커 토글
+        if (markers.development) {
+            markers.development.forEach(function(m) { m.setMap(show ? map : null); });
+        }
+        // 폴리곤 토글
+        if (show && !devPolygonsLoaded) {
+            loadDevPolygonData(function() {
+                polygons.development.forEach(function(p) { p.setMap(map); });
+            });
+        } else if (devPolygonsLoaded) {
+            polygons.development.forEach(function(p) { p.setMap(show ? map : null); });
+        }
+        return;
+    }
     // 완전일치 lazy loading (마커만 사용 - 토지목록좌표 기반)
     if (category === 'exact' && show && !exactLoaded) {
         loadExactMatchData(function() {
