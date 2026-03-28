@@ -2571,7 +2571,7 @@ function loadNearby100Data(callback) {
     if (nearby100Loaded) { if(callback) callback(); return; }
     console.log("100m 이내 폴리곤 데이터 로딩...");
 
-    fetch("data_nearby100_polygons.json?v=20260131")
+    fetch("data_nearby100_polygons.json?v=20260328")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
@@ -2757,7 +2757,7 @@ function loadDevPolygonData(callback) {
     if (devPolygonsLoaded) { if(callback) callback(); return; }
     console.log("개발예정지 폴리곤 데이터 로딩...");
 
-    fetch("data_dev_polygons.json?v=202601310001")
+    fetch("data_dev_polygons.json?v=202603280001")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
