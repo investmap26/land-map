@@ -2500,7 +2500,7 @@ function loadExactMatchData(callback) {
     if (exactLoaded) { if(callback) callback(); return; }
     console.log("완전일치 데이터 로딩 (토지목록좌표 기반)...");
 
-    fetch("data_exact_polygons.json?v=202601052040")
+    fetch("data_exact_polygons.json?v=20260328c")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
@@ -2571,7 +2571,7 @@ function loadNearby100Data(callback) {
     if (nearby100Loaded) { if(callback) callback(); return; }
     console.log("100m 이내 폴리곤 데이터 로딩...");
 
-    fetch("data_nearby100_polygons.json?v=20260328")
+    fetch("data_nearby100_polygons.json?v=20260328c")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
@@ -2634,7 +2634,7 @@ function loadNearby500Data(callback) {
     if (nearby500Loaded) { if(callback) callback(); return; }
     console.log("500m 이내 폴리곤 데이터 로딩...");
 
-    fetch("data_nearby500_polygons.json?v=202601052040")
+    fetch("data_nearby500_polygons.json?v=20260328c")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
@@ -2697,7 +2697,7 @@ function loadNearby1kmData(callback) {
     if (nearby1kmLoaded) { if(callback) callback(); return; }
     console.log("1km 이내 폴리곤 데이터 로딩...");
 
-    fetch("data_nearby1km_polygons.json?v=20260112fix")
+    fetch("data_nearby1km_polygons.json?v=20260328c")
         .then(function(r) {
             if (!r.ok) throw new Error('HTTP ' + r.status);
             return r.json();
@@ -2822,7 +2822,7 @@ function loadAuctionData(callback) {
 
     auctionLoading = true;
     console.log("경매 데이터 로딩...");
-    fetch("data_auction.json?v=20260112")
+    fetch("data_auction.json?v=20260328c")
         .then(function(r) { return r.json(); })
         .then(function(data) {
             console.log("경매 데이터 로드 완료:", data.length);
@@ -2880,7 +2880,7 @@ function loadPublicData(callback) {
 
     publicLoading = true;
     console.log("공매 데이터 로딩...");
-    fetch("data_public.json?v=20260112")
+    fetch("data_public.json?v=20260328c")
         .then(function(r) { return r.json(); })
         .then(function(data) {
             console.log("공매 데이터 로드 완료:", data.length);
@@ -3010,8 +3010,8 @@ function toggle500mFilter() {
 function init() {
     var container = document.getElementById('map');
     map = new kakao.maps.Map(container, {
-        center: new kakao.maps.LatLng(36.5, 127.5),
-        level: 13,
+        center: new kakao.maps.LatLng(36.0, 127.8),
+        level: 12,
         mapTypeId: kakao.maps.MapTypeId.HYBRID
     });
     window.map = map; // 전역 접근용
@@ -3134,7 +3134,7 @@ function init() {
 
 
     // 토지보상구역 폴리곤 데이터 로드 및 렌더링
-    fetch("data_proj.json?v=202601101535")
+    fetch("data_proj.json?v=20260328c")
         .then(function(r) { return r.json(); })
         .then(function(projData) {
             console.log("폴리곤 데이터 로드 완료:", projData.length);
