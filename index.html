@@ -4963,13 +4963,17 @@ kakao.maps.load(function() {
         new kakao.maps.Size(30, 36), { offset: new kakao.maps.Point(15, 36) }
       );
       var marker = new kakao.maps.Marker({ position: pos, image: img, map: window.map, zIndex: 100 });
+      var phClean = (b['핸드폰']||'').replace(/[^0-9]/g, '');
+      var smsBody = window.__auctionSmsBody || '안녕하세요. 부동산 시세 문의드립니다.';
+      var smsHref = phClean ? 'sms:+82' + phClean.replace(/^0/, '') + '?body=' + encodeURIComponent(smsBody) : '';
       var iw = new kakao.maps.InfoWindow({
         position: pos,
-        content: '<div style="padding:6px 10px;font-size:11px;min-width:180px;">' +
+        content: '<div style="padding:7px 10px;font-size:11px;min-width:200px;">' +
                  '<b style="color:' + color + ';">#' + (b['순위']||'') + ' ' + (b['상호']||'') + '</b><br>' +
                  '<span style="color:#666;">📍 ' + (b['주소']||'') + '</span><br>' +
                  '<span>📱 ' + (b['핸드폰']||'') + ' / ☎ ' + (b['사무실']||'') + '</span><br>' +
-                 '<span style="color:' + color + ';font-weight:600;">↔ ' + dist + 'm</span>' +
+                 '<span style="color:' + color + ';font-weight:600;">↔ ' + dist + 'm</span><br>' +
+                 (smsHref ? '<a href="' + smsHref + '" style="display:inline-block;margin-top:5px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 사건 시세문의 문자</a>' : '') +
                  '</div>'
       });
       kakao.maps.event.addListener(marker, 'click', function(){ iw.open(window.map, marker); });
@@ -4979,12 +4983,13 @@ kakao.maps.load(function() {
   window.addEventListener('message', function(ev){
     var d = ev.data;
     if (!d || d.type !== 'auction-target') return;
+    // 사건 시세문의 문자 양식 보관 (인포윈도우 [💬 문자]가 사용)
+    if (d.smsBody) window.__auctionSmsBody = d.smsBody;
     ensureKakao(function(){
       clearBrokerMarkers();
       var center = drawTarget(d.target);
       drawBrokers(d.brokers || []);
       try { window.map.setCenter(center); window.map.setLevel(4); } catch(e){}
-      // 검색창에도 주소 채워줌 (시각 일치)
       var input = document.getElementById('search-input');
       if (input && d.target.address) input.value = d.target.address;
     });
@@ -5029,11 +5034,14 @@ kakao.maps.load(function() {
       // [lat, lng, "상호", "phone", "office", "addr", "sido"]
       var pos = new kakao.maps.LatLng(b[0], b[1]);
       var m = new kakao.maps.Marker({ position: pos, image: img });
-      var content = '<div style="padding:7px 12px;font-size:11px;min-width:200px;line-height:1.5;">' +
+      var phoneClean = (b[3]||'').replace(/[^0-9]/g, '');
+      var smsHref = phoneClean ? 'sms:+82' + phoneClean.replace(/^0/, '') + '?body=' + encodeURIComponent('안녕하세요. 부동산 시세 문의드립니다.') : '';
+      var content = '<div style="padding:8px 12px;font-size:11px;min-width:220px;line-height:1.5;">' +
                     '<b style="color:#059669;font-size:12px;">📞 ' + (b[2]||'') + '</b><br>' +
                     '<span style="color:#666;">📍 ' + (b[5]||'') + '</span><br>' +
                     (b[3] ? '<span>📱 <a href="tel:' + b[3] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[3] + '</a></span><br>' : '') +
-                    (b[4] ? '<span>☎ <a href="tel:' + b[4] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[4] + '</a></span>' : '') +
+                    (b[4] ? '<span>☎ <a href="tel:' + b[4] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[4] + '</a></span><br>' : '') +
+                    (smsHref ? '<a href="' + smsHref + '" style="display:inline-block;margin-top:6px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 문자 보내기</a>' : '') +
                     '</div>';
       kakao.maps.event.addListener(m, 'click', function(){
         iw.setContent(content);
