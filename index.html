@@ -3403,19 +3403,19 @@ function showParcel(lat, lng, address, areaInfo) {
 // 전체 레이어 켜기/끄기 토글
 var allLayersOn = false;
 function toggleAllLayers() {
-    var layers = ['railway', 'highway', 'ic', 'development', 'land', 'exact', 'nearby500', 'nearby1km', 'broker'];
+    // ★ 100m·500m·1km 인근거리 + broker 공인중개사 모두 포함
+    var layers = ['railway', 'highway', 'ic', 'development', 'land', 'exact',
+                  'nearby100', 'nearby500', 'nearby1km', 'broker'];
     allLayersOn = !allLayersOn;
 
     layers.forEach(function(layer) {
         var checkbox = document.getElementById('layer-' + layer);
-        if (checkbox) {
-            if (allLayersOn && !checkbox.checked) {
-                checkbox.checked = true;
-                checkbox.dispatchEvent(new Event('change'));
-            } else if (!allLayersOn && checkbox.checked) {
-                checkbox.checked = false;
-                checkbox.dispatchEvent(new Event('change'));
-            }
+        if (!checkbox) { console.warn('[toggleAll] not found: layer-' + layer); return; }
+        var desired = allLayersOn;
+        if (checkbox.checked !== desired) {
+            checkbox.checked = desired;
+            // onchange 핸들러 호출 (toggleLayer 또는 toggleBrokerLayer)
+            checkbox.dispatchEvent(new Event('change'));
         }
     });
     
