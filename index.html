@@ -1196,6 +1196,16 @@
             </label>
         </div>
         <div class="layer-group">
+            <div class="layer-title">중개사 DB</div>
+            <label class="layer-item" style="background:linear-gradient(90deg,#059669 0%,#047857 100%)">
+                <input type="checkbox" id="layer-broker" onchange="toggleBrokerLayer()">
+                <div class="toggle"></div>
+                <div class="layer-color" style="background: #10b981; color: #10b981;"></div>
+                <span class="layer-name" style="color:#fff;font-weight:600">📞 공인중개사</span>
+                <span class="layer-count" id="count-broker" style="background:#10b981;color:#fff">101K</span>
+            </label>
+        </div>
+        <div class="layer-group">
             <div class="layer-title">인근거리</div>
             <label class="layer-item" style="background:linear-gradient(90deg,#D32F2F 0%,#B71C1C 100%)">
                 <input type="checkbox" id="layer-nearby100" onchange="toggleLayer('nearby100')">
@@ -4981,6 +4991,118 @@ kakao.maps.load(function() {
   });
   // 준비 신호
   try { window.parent && window.parent.postMessage({type:'land-map-ready'}, '*'); } catch(e){}
+})();
+</script>
+
+<!-- ★ 공인중개사 영구 레이어 (data/brokers.json) — 알파카 수집 + 좌표 매칭 101,250건 -->
+<script>
+(function(){
+  var brokerData = null;
+  var brokerMarkers = [];
+  var brokerClusterer = null;
+  var brokerLoading = false;
+
+  function setLoading(state) {
+    var c = document.getElementById('count-broker');
+    if (!c) return;
+    if (state === 'loading') c.textContent = '⏳';
+    else if (state === 'ready') c.textContent = brokerData ? (Math.round(brokerData.length/1000) + 'K') : '101K';
+    else if (state === 'error') c.textContent = '❌';
+  }
+
+  function makeMarkerImage() {
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 22 28">' +
+              '<path d="M11 1 C5 1 1 5 1 11 C1 19 11 27 11 27 C11 27 21 19 21 11 C21 5 17 1 11 1 Z" fill="#10b981" stroke="#fff" stroke-width="1.5"/>' +
+              '<circle cx="11" cy="11" r="3.5" fill="#fff"/>' +
+              '</svg>';
+    return new kakao.maps.MarkerImage(
+      'data:image/svg+xml;utf8,' + encodeURIComponent(svg),
+      new kakao.maps.Size(22, 28), { offset: new kakao.maps.Point(11, 28) }
+    );
+  }
+
+  function buildMarkers() {
+    if (!brokerData || !window.kakao || !kakao.maps) return;
+    var img = makeMarkerImage();
+    var iw = new kakao.maps.InfoWindow({ removable: true });
+    brokerData.forEach(function(b){
+      // [lat, lng, "상호", "phone", "office", "addr", "sido"]
+      var pos = new kakao.maps.LatLng(b[0], b[1]);
+      var m = new kakao.maps.Marker({ position: pos, image: img });
+      var content = '<div style="padding:7px 12px;font-size:11px;min-width:200px;line-height:1.5;">' +
+                    '<b style="color:#059669;font-size:12px;">📞 ' + (b[2]||'') + '</b><br>' +
+                    '<span style="color:#666;">📍 ' + (b[5]||'') + '</span><br>' +
+                    (b[3] ? '<span>📱 <a href="tel:' + b[3] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[3] + '</a></span><br>' : '') +
+                    (b[4] ? '<span>☎ <a href="tel:' + b[4] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[4] + '</a></span>' : '') +
+                    '</div>';
+      kakao.maps.event.addListener(m, 'click', function(){
+        iw.setContent(content);
+        iw.open(window.map, m);
+      });
+      brokerMarkers.push(m);
+    });
+  }
+
+  function showLayer() {
+    if (!window.kakao || !kakao.maps) { console.warn('kakao not ready'); return; }
+    if (brokerClusterer) {
+      brokerClusterer.addMarkers(brokerMarkers);
+      brokerClusterer.setMap(window.map);
+      return;
+    }
+    brokerClusterer = new kakao.maps.MarkerClusterer({
+      map: window.map,
+      averageCenter: true,
+      minLevel: 5,
+      gridSize: 60,
+      disableClickZoom: false,
+      styles: [
+        { width:'40px', height:'40px', background:'rgba(16,185,129,0.85)', borderRadius:'20px', color:'#fff', textAlign:'center', lineHeight:'40px', fontWeight:'700', fontSize:'12px' },
+        { width:'50px', height:'50px', background:'rgba(5,150,105,0.9)',   borderRadius:'25px', color:'#fff', textAlign:'center', lineHeight:'50px', fontWeight:'700', fontSize:'13px' },
+        { width:'60px', height:'60px', background:'rgba(4,120,87,0.95)',   borderRadius:'30px', color:'#fff', textAlign:'center', lineHeight:'60px', fontWeight:'700', fontSize:'14px' },
+        { width:'70px', height:'70px', background:'rgba(6,95,70,1.0)',     borderRadius:'35px', color:'#fff', textAlign:'center', lineHeight:'70px', fontWeight:'800', fontSize:'15px' },
+      ],
+    });
+    brokerClusterer.addMarkers(brokerMarkers);
+  }
+
+  function hideLayer() {
+    if (brokerClusterer) brokerClusterer.setMap(null);
+  }
+
+  window.toggleBrokerLayer = function() {
+    var cb = document.getElementById('layer-broker');
+    if (!cb) return;
+    if (cb.checked) {
+      if (brokerData) { showLayer(); return; }
+      if (brokerLoading) return;
+      brokerLoading = true;
+      setLoading('loading');
+      fetch('data/brokers.json')
+        .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(j){
+          brokerData = j;
+          brokerLoading = false;
+          setLoading('ready');
+          // SDK clusterer가 늦게 로드될 수 있으니 대기
+          var t = 0;
+          var iv = setInterval(function(){
+            if (window.kakao && kakao.maps && kakao.maps.MarkerClusterer && window.map) {
+              clearInterval(iv);
+              buildMarkers();
+              showLayer();
+            } else if (++t > 80) { clearInterval(iv); console.warn('[broker] clusterer not ready'); }
+          }, 250);
+        })
+        .catch(function(e){
+          brokerLoading = false;
+          setLoading('error');
+          console.error('[broker] load failed', e);
+        });
+    } else {
+      hideLayer();
+    }
+  };
 })();
 </script>
 </body>
