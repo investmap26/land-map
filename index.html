@@ -14,16 +14,17 @@
         #map { width: 100vw; height: 100vh; }
 
         .control-panel {
-            position: absolute; top: 24px; left: 24px;
+            position: absolute; top: 12px; left: 12px;
             background: linear-gradient(165deg, rgba(25, 25, 35, 0.95) 0%, rgba(18, 18, 25, 0.98) 100%);
             backdrop-filter: blur(50px) saturate(180%);
             border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 20px;
-            padding: 16px;
-            min-width: 140px;
-            max-height: calc(100vh - 48px);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 100px;
+            max-height: calc(100vh - 24px);
             overflow-y: auto;
             z-index: 100;
+            font-size: 11px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.7),
                         0 0 40px rgba(212, 175, 55, 0.03),
                         inset 0 1px 0 rgba(255,255,255,0.1),
@@ -56,10 +57,10 @@
         }
 
         .panel-header {
-            font-size: 13px; font-weight: 700; margin-bottom: 14px;
+            font-size: 11px; font-weight: 700; margin-bottom: 8px;
             color: #fff;
-            display: flex; align-items: center; gap: 8px;
-            padding-bottom: 12px;
+            display: flex; align-items: center; gap: 5px;
+            padding-bottom: 6px;
             border-bottom: 1px solid rgba(212, 175, 55, 0.1);
             letter-spacing: -0.3px;
             position: relative;
@@ -91,10 +92,10 @@
 
         .layer-item {
             display: flex; align-items: center;
-            padding: 8px 10px; margin-bottom: 6px;
+            padding: 4px 6px; margin-bottom: 3px;
             background: rgba(255,255,255,0.02);
             border: 1px solid transparent;
-            border-radius: 10px; cursor: pointer;
+            border-radius: 6px; cursor: pointer;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -173,14 +174,14 @@
         
         /* 검색 패널 */
         .search-panel {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(160deg, rgba(22, 22, 30, 0.97), rgba(15, 15, 20, 0.99));
             backdrop-filter: blur(40px) saturate(200%);
             border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 18px;
-            padding: 14px 18px;
+            border-radius: 10px;
+            padding: 6px 10px;
             z-index: 150;
-            display: flex; gap: 12px; align-items: center;
+            display: flex; gap: 6px; align-items: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .search-panel::before {
@@ -191,11 +192,11 @@
             background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent);
         }
         .search-input {
-            width: 300px; padding: 12px 16px;
+            width: 180px; padding: 6px 10px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            color: #fff; font-size: 13px;
+            border-radius: 7px;
+            color: #fff; font-size: 11px;
             font-family: 'Pretendard', sans-serif;
             outline: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -207,10 +208,10 @@
             box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
         }
         .search-btn {
-            padding: 12px 22px;
+            padding: 6px 12px;
             background: linear-gradient(135deg, #6366f1, #a855f7);
-            border: none; border-radius: 12px;
-            color: #fff; font-size: 13px; font-weight: 600;
+            border: none; border-radius: 7px;
+            color: #fff; font-size: 11px; font-weight: 600;
             cursor: pointer;
             font-family: 'Pretendard', sans-serif;
             box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
@@ -266,24 +267,25 @@
         /* 날짜 필터 패널 */
         .filter-panel {
             position: fixed;
-            top: 120px;
-            right: 20px;
-            width: 240px;
+            top: 70px;
+            right: 12px;
+            width: 150px;
             background: linear-gradient(160deg, rgba(22, 22, 30, 0.97), rgba(15, 15, 20, 0.99));
             backdrop-filter: blur(40px) saturate(200%);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 10px;
+            border-radius: 8px;
+            padding: 6px;
             z-index: 200;
+            font-size: 10px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             font-family: 'Pretendard', sans-serif;
         }
         .filter-panel-title {
             color: #fff;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
+            margin-bottom: 4px;
+            padding-bottom: 3px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         /* 경매/공매 탭 */
@@ -4894,6 +4896,91 @@ kakao.maps.load(function() {
         });
     };
     document.head.appendChild(s);
+})();
+</script>
+
+<!-- ★ 부모창(단체문자발송)에서 postMessage로 인근 중개사·물건지 마커 표시 -->
+<script>
+(function(){
+  var brokerMarkers = [];
+  var targetMarker = null;
+  function clearBrokerMarkers() {
+    brokerMarkers.forEach(function(m){ try { m.setMap(null); } catch(e){} });
+    brokerMarkers = [];
+    if (targetMarker) { try { targetMarker.setMap(null); } catch(e){} targetMarker = null; }
+  }
+  function ensureKakao(cb) {
+    var tries = 0;
+    var iv = setInterval(function(){
+      if (window.kakao && kakao.maps && window.map) { clearInterval(iv); cb(); }
+      else if (++tries > 80) { clearInterval(iv); console.warn('[parentMsg] kakao map not ready'); }
+    }, 250);
+  }
+  function drawTarget(target) {
+    var pos = new kakao.maps.LatLng(target.lat, target.lng);
+    var img = new kakao.maps.MarkerImage(
+      'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="50" viewBox="0 0 44 50">' +
+        '<path d="M22 2 C10 2 2 10 2 22 C2 36 22 48 22 48 C22 48 42 36 42 22 C42 10 34 2 22 2 Z" fill="#dc2626" stroke="#fff" stroke-width="2"/>' +
+        '<circle cx="22" cy="22" r="6" fill="#fff"/>' +
+        '<text x="22" y="26" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">물건</text>' +
+        '</svg>'
+      ),
+      new kakao.maps.Size(44, 50), { offset: new kakao.maps.Point(22, 50) }
+    );
+    targetMarker = new kakao.maps.Marker({ position: pos, image: img, map: window.map, zIndex: 9999 });
+    var iw = new kakao.maps.InfoWindow({
+      position: pos,
+      content: '<div style="padding:5px 10px;font-size:11px;font-weight:600;color:#dc2626;">📌 물건지<br><span style="font-size:10px;color:#444;">' + (target.address||'') + '</span></div>'
+    });
+    kakao.maps.event.addListener(targetMarker, 'click', function(){ iw.open(window.map, targetMarker); });
+    return pos;
+  }
+  function drawBrokers(brokers) {
+    var bounds = null;
+    brokers.forEach(function(b){
+      if (!b._위도 || !b._경도) return;
+      var pos = new kakao.maps.LatLng(b._위도, b._경도);
+      var dist = b['거리m'] || 0;
+      var color = dist < 300 ? '#dc2626' : dist < 1000 ? '#ea580c' : '#0891b2';
+      var img = new kakao.maps.MarkerImage(
+        'data:image/svg+xml;utf8,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="36" viewBox="0 0 30 36">' +
+          '<path d="M15 2 C7 2 2 7 2 15 C2 25 15 34 15 34 C15 34 28 25 28 15 C28 7 23 2 15 2 Z" fill="' + color + '" stroke="#fff" stroke-width="1.5"/>' +
+          '<text x="15" y="19" font-size="11" font-weight="bold" fill="#fff" text-anchor="middle">' + (b['순위']||'') + '</text>' +
+          '</svg>'
+        ),
+        new kakao.maps.Size(30, 36), { offset: new kakao.maps.Point(15, 36) }
+      );
+      var marker = new kakao.maps.Marker({ position: pos, image: img, map: window.map, zIndex: 100 });
+      var iw = new kakao.maps.InfoWindow({
+        position: pos,
+        content: '<div style="padding:6px 10px;font-size:11px;min-width:180px;">' +
+                 '<b style="color:' + color + ';">#' + (b['순위']||'') + ' ' + (b['상호']||'') + '</b><br>' +
+                 '<span style="color:#666;">📍 ' + (b['주소']||'') + '</span><br>' +
+                 '<span>📱 ' + (b['핸드폰']||'') + ' / ☎ ' + (b['사무실']||'') + '</span><br>' +
+                 '<span style="color:' + color + ';font-weight:600;">↔ ' + dist + 'm</span>' +
+                 '</div>'
+      });
+      kakao.maps.event.addListener(marker, 'click', function(){ iw.open(window.map, marker); });
+      brokerMarkers.push(marker);
+    });
+  }
+  window.addEventListener('message', function(ev){
+    var d = ev.data;
+    if (!d || d.type !== 'auction-target') return;
+    ensureKakao(function(){
+      clearBrokerMarkers();
+      var center = drawTarget(d.target);
+      drawBrokers(d.brokers || []);
+      try { window.map.setCenter(center); window.map.setLevel(4); } catch(e){}
+      // 검색창에도 주소 채워줌 (시각 일치)
+      var input = document.getElementById('search-input');
+      if (input && d.target.address) input.value = d.target.address;
+    });
+  });
+  // 준비 신호
+  try { window.parent && window.parent.postMessage({type:'land-map-ready'}, '*'); } catch(e){}
 })();
 </script>
 </body>
