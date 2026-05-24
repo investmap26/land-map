@@ -4903,6 +4903,26 @@ kakao.maps.load(function() {
             loadExactMatchData(function() {
                 markers.exact.forEach(function(m) { m.setMap(map); });
             });
+
+            // ★ iframe 안에서 #map div 크기 변경 감지 시 카카오맵 자동 relayout
+            //   (iframe 처음 로드 시 viewport 측정 0×0 문제 해결)
+            try {
+                var mapDiv = document.getElementById('map');
+                if (window.ResizeObserver && mapDiv) {
+                    var resizeTimer = null;
+                    new ResizeObserver(function(){
+                        clearTimeout(resizeTimer);
+                        resizeTimer = setTimeout(function(){
+                            if (window.map && window.map.relayout) {
+                                try { window.map.relayout(); console.log('[map] auto relayout'); } catch(e){}
+                            }
+                        }, 100);
+                    }).observe(mapDiv);
+                }
+                // 추가 안전망: 1초·3초 후 강제 relayout
+                setTimeout(function(){ try { window.map && window.map.relayout(); } catch(e){} }, 1000);
+                setTimeout(function(){ try { window.map && window.map.relayout(); } catch(e){} }, 3000);
+            } catch(e) {}
         });
     };
     document.head.appendChild(s);
