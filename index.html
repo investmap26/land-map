@@ -4998,20 +4998,37 @@ kakao.maps.load(function() {
   // 준비 신호
   try { window.parent && window.parent.postMessage({type:'land-map-ready'}, '*'); } catch(e){}
 
-  // 🆕 SMS 양식 안전 호출 — 사건 양식 있으면 사용, 없으면 부모창에 요청 후 대기
+  // 🆕 페이지 로드 시 URL parameter에서 sms 양식 추출 (새 창·iframe·직접 접속 모두 작동)
+  try {
+    var urlParams = new URLSearchParams(window.location.search);
+    var smsFromUrl = urlParams.get('sms');
+    if (smsFromUrl) {
+      window.__auctionSmsBody = decodeURIComponent(smsFromUrl);
+      console.log('[land-map] sms 양식 URL에서 받음 (' + window.__auctionSmsBody.length + '자)');
+    }
+  } catch(e) {}
+
+  // 🆕 SMS 양식 안전 호출 — URL > 사건 양식 > 부모창 요청 > fallback 순
   window._sendSmsTo = function(phoneClean) {
-    var DEFAULT_MSG = '안녕하세요, 사장님. 부동산 시세 문의드립니다.';
+    var DEFAULT_MSG = '안녕하세요, 사장님. 부동산 시세 문의드립니다.\n\n[💡 단체문자발송에서 사건번호 조회 후 문자 누르면 물건 정보가 자동으로 채워집니다]';
     function launch(msg) {
       var to = '+82' + phoneClean.replace(/^0/, '');
       location.href = 'sms:' + to + '?body=' + encodeURIComponent(msg);
     }
-    // 1) 사건 양식 이미 있으면 즉시 사용
+    // 1) 양식 있으면 즉시 (URL 또는 postMessage로 채워진 경우)
     if (window.__auctionSmsBody) { launch(window.__auctionSmsBody); return; }
-    // 2) 없으면 부모창에 요청 + 500ms 대기 후 재확인
-    try { window.parent && window.parent.postMessage({type:'land-map-request-sms'}, '*'); } catch(e){}
-    setTimeout(function(){
-      launch(window.__auctionSmsBody || DEFAULT_MSG);
-    }, 500);
+    // 2) 부모창 있으면 요청 + 500ms 대기
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({type:'land-map-request-sms'}, '*');
+        setTimeout(function(){
+          launch(window.__auctionSmsBody || DEFAULT_MSG);
+        }, 500);
+        return;
+      }
+    } catch(e){}
+    // 3) 별창 (부모 없음) → fallback 즉시
+    launch(DEFAULT_MSG);
   };
 })();
 </script>
