@@ -3403,9 +3403,9 @@ function showParcel(lat, lng, address, areaInfo) {
 // 전체 레이어 켜기/끄기 토글
 var allLayersOn = false;
 function toggleAllLayers() {
-    var layers = ['railway', 'highway', 'ic', 'development', 'land', 'exact', 'nearby500', 'nearby1km'];
+    var layers = ['railway', 'highway', 'ic', 'development', 'land', 'exact', 'nearby500', 'nearby1km', 'broker'];
     allLayersOn = !allLayersOn;
-    
+
     layers.forEach(function(layer) {
         var checkbox = document.getElementById('layer-' + layer);
         if (checkbox) {
@@ -4964,8 +4964,10 @@ kakao.maps.load(function() {
       );
       var marker = new kakao.maps.Marker({ position: pos, image: img, map: window.map, zIndex: 100 });
       var phClean = (b['핸드폰']||'').replace(/[^0-9]/g, '');
-      var smsBody = window.__auctionSmsBody || '안녕하세요. 부동산 시세 문의드립니다.';
-      var smsHref = phClean ? 'sms:+82' + phClean.replace(/^0/, '') + '?body=' + encodeURIComponent(smsBody) : '';
+      // onclick 시점에 최신 사건 양식을 사용 (사장님이 산정 추가/수정 가능)
+      var smsBtnHtml = phClean
+        ? '<a href="javascript:void(0)" onclick="(function(){var msg=window.__auctionSmsBody||\'안녕하세요. 부동산 시세 문의드립니다.\';location.href=\'sms:+82' + phClean.replace(/^0/, '') + '?body=\'+encodeURIComponent(msg);})()" style="display:inline-block;margin-top:5px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 사건 시세문의 문자</a>'
+        : '';
       var iw = new kakao.maps.InfoWindow({
         position: pos,
         content: '<div style="padding:7px 10px;font-size:11px;min-width:200px;">' +
@@ -4973,7 +4975,7 @@ kakao.maps.load(function() {
                  '<span style="color:#666;">📍 ' + (b['주소']||'') + '</span><br>' +
                  '<span>📱 ' + (b['핸드폰']||'') + ' / ☎ ' + (b['사무실']||'') + '</span><br>' +
                  '<span style="color:' + color + ';font-weight:600;">↔ ' + dist + 'm</span><br>' +
-                 (smsHref ? '<a href="' + smsHref + '" style="display:inline-block;margin-top:5px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 사건 시세문의 문자</a>' : '') +
+                 smsBtnHtml +
                  '</div>'
       });
       kakao.maps.event.addListener(marker, 'click', function(){ iw.open(window.map, marker); });
@@ -5035,13 +5037,16 @@ kakao.maps.load(function() {
       var pos = new kakao.maps.LatLng(b[0], b[1]);
       var m = new kakao.maps.Marker({ position: pos, image: img });
       var phoneClean = (b[3]||'').replace(/[^0-9]/g, '');
-      var smsHref = phoneClean ? 'sms:+82' + phoneClean.replace(/^0/, '') + '?body=' + encodeURIComponent('안녕하세요. 부동산 시세 문의드립니다.') : '';
+      // onclick 시점에 양식을 동적 결정: 사건 조회됐으면 그 양식, 아니면 기본 인사 + 안내
+      var smsBtnHtml = phoneClean
+        ? '<a href="javascript:void(0)" onclick="(function(){var msg=window.__auctionSmsBody||(\'안녕하세요, 사장님. 부동산 시세 문의드립니다.\\n\\n[물건 정보는 단체문자발송에서 사건번호 조회 후 자동 채워집니다]\');location.href=\'sms:+82' + phoneClean.replace(/^0/, '') + '?body=\'+encodeURIComponent(msg);})()" style="display:inline-block;margin-top:6px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 문자 보내기</a>'
+        : '';
       var content = '<div style="padding:8px 12px;font-size:11px;min-width:220px;line-height:1.5;">' +
                     '<b style="color:#059669;font-size:12px;">📞 ' + (b[2]||'') + '</b><br>' +
                     '<span style="color:#666;">📍 ' + (b[5]||'') + '</span><br>' +
                     (b[3] ? '<span>📱 <a href="tel:' + b[3] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[3] + '</a></span><br>' : '') +
                     (b[4] ? '<span>☎ <a href="tel:' + b[4] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[4] + '</a></span><br>' : '') +
-                    (smsHref ? '<a href="' + smsHref + '" style="display:inline-block;margin-top:6px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 문자 보내기</a>' : '') +
+                    smsBtnHtml +
                     '</div>';
       kakao.maps.event.addListener(m, 'click', function(){
         iw.setContent(content);
