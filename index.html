@@ -4893,38 +4893,48 @@ window.toggleBookmarkPanel = toggleBookmarkPanel;
 
 
 kakao.maps.load(function() {
-            console.log('%c[버전] 20260113-v1 - 팝업 크기 축소 + 닫기버튼', 'color: red; font-size: 20px; font-weight: bold;');
-            init();
+            console.log('%c[버전] 20260525 - iframe size-wait + relayout', 'color: red; font-size: 20px; font-weight: bold;');
 
-            // 로드뷰 초기화 (원본 방식: 페이지 로드 시 한 번만)
-            initRoadview();
-            initSearchData();
-            loadFavorites();
-            loadBookmarks();
-            // 완전일치 데이터 자동 로드 (기본 체크됨 - 마커만 사용)
-            loadExactMatchData(function() {
-                markers.exact.forEach(function(m) { m.setMap(map); });
-            });
-
-            // ★ iframe 안에서 #map div 크기 변경 감지 시 카카오맵 자동 relayout
-            //   (iframe 처음 로드 시 viewport 측정 0×0 문제 해결)
-            try {
-                var mapDiv = document.getElementById('map');
-                if (window.ResizeObserver && mapDiv) {
-                    var resizeTimer = null;
-                    new ResizeObserver(function(){
-                        clearTimeout(resizeTimer);
-                        resizeTimer = setTimeout(function(){
-                            if (window.map && window.map.relayout) {
-                                try { window.map.relayout(); console.log('[map] auto relayout'); } catch(e){}
-                            }
-                        }, 100);
-                    }).observe(mapDiv);
+            // ★ #map div가 충분히 큰 사이즈를 잡을 때까지 대기 후 init
+            //   (iframe 처음 로드 시 100vh가 0으로 측정되어 카카오맵 init이 0×0이 되는 문제 회피)
+            function _initWhenSized(tries) {
+                var d = document.getElementById('map');
+                var w = d ? d.offsetWidth : 0;
+                var h = d ? d.offsetHeight : 0;
+                if (w < 200 || h < 200) {
+                    if (tries < 50) {
+                        setTimeout(function(){ _initWhenSized(tries+1); }, 100);
+                        return;
+                    }
+                    console.warn('[map] 사이즈 대기 timeout, 강제 init w=' + w + ' h=' + h);
                 }
-                // 추가 안전망: 1초·3초 후 강제 relayout
-                setTimeout(function(){ try { window.map && window.map.relayout(); } catch(e){} }, 1000);
-                setTimeout(function(){ try { window.map && window.map.relayout(); } catch(e){} }, 3000);
-            } catch(e) {}
+                console.log('[map] #map size ready w=' + w + ' h=' + h + ' (tries=' + tries + ') → init');
+                init();
+                initRoadview();
+                initSearchData();
+                loadFavorites();
+                loadBookmarks();
+                loadExactMatchData(function() {
+                    markers.exact.forEach(function(m) { m.setMap(map); });
+                });
+                // ResizeObserver + 강제 relayout (이후 변경 시 자동)
+                try {
+                    if (window.ResizeObserver && d) {
+                        var t = null;
+                        new ResizeObserver(function(){
+                            clearTimeout(t);
+                            t = setTimeout(function(){
+                                if (window.map && window.map.relayout) {
+                                    try { window.map.relayout(); console.log('[map] auto relayout'); } catch(e){}
+                                }
+                            }, 100);
+                        }).observe(d);
+                    }
+                    setTimeout(function(){ try { window.map && window.map.relayout(); } catch(e){} }, 500);
+                    setTimeout(function(){ try { window.map && window.map.relayout(); } catch(e){} }, 2000);
+                } catch(e) {}
+            }
+            _initWhenSized(0);
         });
     };
     document.head.appendChild(s);
