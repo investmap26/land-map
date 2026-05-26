@@ -5033,6 +5033,19 @@ kakao.maps.load(function() {
     if (!d || d.type !== 'auction-target') return;
     // 사건 시세문의 문자 양식 보관 (인포윈도우 [💬 문자]가 사용)
     if (d.smsBody) window.__auctionSmsBody = d.smsBody;
+    // ★★ v16 (2026-05-26) 본질 버그 FIX:
+    //   사건번호 조회 전 부모창이 빈 target {}을 보내면 → drawTarget(NaN) → setCenter(NaN) + setLevel(4)
+    //   → 카카오맵 내부 center/bounds NaN 영구 손상 (경공매 iframe 빈화면의 진짜 원인)
+    //   해결: target.lat / target.lng 유효성 검증, 무효면 setCenter 호출 자체를 안 함
+    var t = d.target || {};
+    var lat = parseFloat(t.lat);
+    var lng = parseFloat(t.lng);
+    var hasValidTarget = !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+    if (!hasValidTarget) {
+      // 빈 target이면 마커·setCenter 전부 skip. 카카오맵 상태 유지.
+      console.log('[v16] auction-target 받았으나 target.lat/lng 무효 → skip (map 상태 보존)');
+      return;
+    }
     ensureKakao(function(){
       clearBrokerMarkers();
       var center = drawTarget(d.target);
