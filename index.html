@@ -4984,17 +4984,34 @@ window.toggleBookmarkPanel = toggleBookmarkPanel;
 
 kakao.maps.load(function() {
             console.log('%c[버전] 20260113-v1 - 팝업 크기 축소 + 닫기버튼', 'color: red; font-size: 20px; font-weight: bold;');
-            init();
-
-            // 로드뷰 초기화 (원본 방식: 페이지 로드 시 한 번만)
-            initRoadview();
-            initSearchData();
-            loadFavorites();
-            loadBookmarks();
-            // 완전일치 데이터 자동 로드 (기본 체크됨 - 마커만 사용)
-            loadExactMatchData(function() {
-                markers.exact.forEach(function(m) { m.setMap(map); });
-            });
+            // ★ v5 (2026-05-26): init()을 container 사이즈 확정 후 호출
+            //   - 진단: iframe 안에서 init 시점 container=0 → bounds NaN 영구 손상
+            //   - 해결: container.offsetWidth > 0 + offsetHeight > 0 보장 후에만 init
+            //   - 최대 6초 polling (100ms 간격 60회), 그래도 0이면 fallback init
+            function _v5_doInit() {
+                init();
+                initRoadview();
+                initSearchData();
+                loadFavorites();
+                loadBookmarks();
+                loadExactMatchData(function() {
+                    markers.exact.forEach(function(m) { m.setMap(map); });
+                });
+            }
+            function _v5_deferredInit(retries) {
+                retries = retries || 0;
+                var c = document.getElementById('map');
+                if (c && c.offsetWidth > 0 && c.offsetHeight > 0) {
+                    console.log('[v5] container ' + c.offsetWidth + 'x' + c.offsetHeight + ' confirmed after ' + retries + ' retries → init()');
+                    _v5_doInit();
+                } else if (retries < 60) {
+                    setTimeout(function(){ _v5_deferredInit(retries + 1); }, 100);
+                } else {
+                    console.warn('[v5] timeout (6s) waiting for container size, fallback init');
+                    _v5_doInit();
+                }
+            }
+            _v5_deferredInit();
         });
     };
     document.head.appendChild(s);
