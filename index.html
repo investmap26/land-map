@@ -5080,43 +5080,94 @@ kakao.maps.load(function() {
 })();
 </script>
 
-<!-- ★ 공인중개사 영구 레이어 (data/brokers.json) — 알파카 수집 + 좌표 매칭 101,250건 -->
+<!-- ★ 공인중개사 영구 레이어 — v8 viewport 기반 동적 로딩 (104K 일괄 로드 X)
+     사장님 핵심 지적: 화면에 보이는 영역의 중개사만 표시 (10만개 한번에 로드 절대 금지)
+     - JSON은 1회만 fetch (15MB)
+     - 마커는 현재 보이는 bounds 안 중개사만 생성 (최대 500개)
+     - 지도 idle 이벤트마다 자동 재계산 (이동/줌 변경 반응)
+     - 줌 레벨 7 이상이면 마커 숨김 (성능 보호) -->
 <script>
 (function(){
   var brokerData = null;
   var brokerMarkers = [];
   var brokerClusterer = null;
   var brokerLoading = false;
+  var brokerMarkerImage = null;
+  var brokerInfoWindow = null;
+  var brokerActive = false;
+  var brokerIdleListener = null;
+  var MAX_VISIBLE_MARKERS = 500;
+  var MIN_ZOOM_FOR_MARKER = 7;
 
   function setLoading(state) {
     var c = document.getElementById('count-broker');
     if (!c) return;
     if (state === 'loading') c.textContent = '⏳';
-    else if (state === 'ready') c.textContent = brokerData ? (Math.round(brokerData.length/1000) + 'K') : '101K';
+    else if (state === 'ready') c.textContent = brokerData ? (Math.round(brokerData.length/1000) + 'K') : '104K';
     else if (state === 'error') c.textContent = '❌';
   }
 
-  function makeMarkerImage() {
+  function getMarkerImage() {
+    if (brokerMarkerImage) return brokerMarkerImage;
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 22 28">' +
               '<path d="M11 1 C5 1 1 5 1 11 C1 19 11 27 11 27 C11 27 21 19 21 11 C21 5 17 1 11 1 Z" fill="#10b981" stroke="#fff" stroke-width="1.5"/>' +
               '<circle cx="11" cy="11" r="3.5" fill="#fff"/>' +
               '</svg>';
-    return new kakao.maps.MarkerImage(
+    brokerMarkerImage = new kakao.maps.MarkerImage(
       'data:image/svg+xml;utf8,' + encodeURIComponent(svg),
       new kakao.maps.Size(22, 28), { offset: new kakao.maps.Point(11, 28) }
     );
+    return brokerMarkerImage;
   }
 
-  function buildMarkers() {
-    if (!brokerData || !window.kakao || !kakao.maps) return;
-    var img = makeMarkerImage();
-    var iw = new kakao.maps.InfoWindow({ removable: true });
-    brokerData.forEach(function(b){
-      // [lat, lng, "상호", "phone", "office", "addr", "sido"]
+  function getInfoWindow() {
+    if (!brokerInfoWindow) brokerInfoWindow = new kakao.maps.InfoWindow({ removable: true });
+    return brokerInfoWindow;
+  }
+
+  function clearMarkers() {
+    brokerMarkers.forEach(function(m){ try { m.setMap(null); } catch(e){} });
+    brokerMarkers = [];
+    if (brokerClusterer) { try { brokerClusterer.clear(); } catch(e){} }
+  }
+
+  // ★ 핵심: 현재 보이는 bounds 안의 중개사만 필터링 (최대 500개)
+  function getVisibleBrokers() {
+    if (!brokerData || !window.map) return [];
+    var level = window.map.getLevel();
+    if (level >= MIN_ZOOM_FOR_MARKER) return [];
+    var bounds = window.map.getBounds();
+    if (!bounds) return [];
+    var sw = bounds.getSouthWest(), ne = bounds.getNorthEast();
+    var minLat = sw.getLat(), maxLat = ne.getLat();
+    var minLng = sw.getLng(), maxLng = ne.getLng();
+    if (isNaN(minLat) || isNaN(minLng)) return [];
+    var visible = [];
+    for (var i = 0; i < brokerData.length; i++) {
+      var b = brokerData[i];
+      if (b[0] >= minLat && b[0] <= maxLat && b[1] >= minLng && b[1] <= maxLng) {
+        visible.push(b);
+        if (visible.length >= MAX_VISIBLE_MARKERS) break;
+      }
+    }
+    return visible;
+  }
+
+  function updateMarkers() {
+    if (!brokerActive || !brokerData || !window.kakao || !kakao.maps || !window.map) return;
+    clearMarkers();
+    var visible = getVisibleBrokers();
+    if (visible.length === 0) {
+      var c = document.getElementById('count-broker');
+      if (c && window.map.getLevel() >= MIN_ZOOM_FOR_MARKER) c.textContent = '🔍줌인';
+      return;
+    }
+    var img = getMarkerImage();
+    var iw = getInfoWindow();
+    visible.forEach(function(b){
       var pos = new kakao.maps.LatLng(b[0], b[1]);
       var m = new kakao.maps.Marker({ position: pos, image: img });
       var phoneClean = (b[3]||'').replace(/[^0-9]/g, '');
-      // onclick 시점에 양식 동적 결정 — 사건 양식 있으면 그것, 없으면 부모창에 즉시 요청 + 1초 대기 후 재시도
       var smsBtnHtml = phoneClean
         ? '<a href="javascript:void(0)" onclick="window._sendSmsTo(\'' + phoneClean + '\')" style="display:inline-block;margin-top:6px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 문자 보내기</a>'
         : '';
@@ -5125,41 +5176,50 @@ kakao.maps.load(function() {
                     '<span style="color:#666;">📍 ' + (b[5]||'') + '</span><br>' +
                     (b[3] ? '<span>📱 <a href="tel:' + b[3] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[3] + '</a></span><br>' : '') +
                     (b[4] ? '<span>☎ <a href="tel:' + b[4] + '" style="color:#059669;text-decoration:none;font-weight:600;">' + b[4] + '</a></span><br>' : '') +
-                    smsBtnHtml +
-                    '</div>';
+                    smsBtnHtml + '</div>';
       kakao.maps.event.addListener(m, 'click', function(){
         iw.setContent(content);
         iw.open(window.map, m);
       });
       brokerMarkers.push(m);
     });
+    if (!brokerClusterer) {
+      brokerClusterer = new kakao.maps.MarkerClusterer({
+        map: window.map, averageCenter: true, minLevel: 3, gridSize: 60, disableClickZoom: false,
+        styles: [
+          { width:'40px', height:'40px', background:'rgba(16,185,129,0.85)', borderRadius:'20px', color:'#fff', textAlign:'center', lineHeight:'40px', fontWeight:'700', fontSize:'12px' },
+          { width:'50px', height:'50px', background:'rgba(5,150,105,0.9)',   borderRadius:'25px', color:'#fff', textAlign:'center', lineHeight:'50px', fontWeight:'700', fontSize:'13px' },
+          { width:'60px', height:'60px', background:'rgba(4,120,87,0.95)',   borderRadius:'30px', color:'#fff', textAlign:'center', lineHeight:'60px', fontWeight:'700', fontSize:'14px' },
+        ],
+      });
+    }
+    brokerClusterer.setMap(window.map);
+    brokerClusterer.addMarkers(brokerMarkers);
+    var c2 = document.getElementById('count-broker');
+    if (c2) c2.textContent = visible.length + '/' + (brokerData ? Math.round(brokerData.length/1000)+'K' : '104K');
+  }
+
+  function attachIdleListener() {
+    if (brokerIdleListener || !window.map || !window.kakao) return;
+    brokerIdleListener = kakao.maps.event.addListener(window.map, 'idle', updateMarkers);
+  }
+  function detachIdleListener() {
+    if (brokerIdleListener && window.kakao) {
+      try { kakao.maps.event.removeListener(brokerIdleListener); } catch(e){}
+      brokerIdleListener = null;
+    }
   }
 
   function showLayer() {
-    if (!window.kakao || !kakao.maps) { console.warn('kakao not ready'); return; }
-    if (brokerClusterer) {
-      brokerClusterer.addMarkers(brokerMarkers);
-      brokerClusterer.setMap(window.map);
-      return;
-    }
-    brokerClusterer = new kakao.maps.MarkerClusterer({
-      map: window.map,
-      averageCenter: true,
-      minLevel: 5,
-      gridSize: 60,
-      disableClickZoom: false,
-      styles: [
-        { width:'40px', height:'40px', background:'rgba(16,185,129,0.85)', borderRadius:'20px', color:'#fff', textAlign:'center', lineHeight:'40px', fontWeight:'700', fontSize:'12px' },
-        { width:'50px', height:'50px', background:'rgba(5,150,105,0.9)',   borderRadius:'25px', color:'#fff', textAlign:'center', lineHeight:'50px', fontWeight:'700', fontSize:'13px' },
-        { width:'60px', height:'60px', background:'rgba(4,120,87,0.95)',   borderRadius:'30px', color:'#fff', textAlign:'center', lineHeight:'60px', fontWeight:'700', fontSize:'14px' },
-        { width:'70px', height:'70px', background:'rgba(6,95,70,1.0)',     borderRadius:'35px', color:'#fff', textAlign:'center', lineHeight:'70px', fontWeight:'800', fontSize:'15px' },
-      ],
-    });
-    brokerClusterer.addMarkers(brokerMarkers);
+    brokerActive = true;
+    attachIdleListener();
+    updateMarkers();
   }
-
   function hideLayer() {
-    if (brokerClusterer) brokerClusterer.setMap(null);
+    brokerActive = false;
+    detachIdleListener();
+    clearMarkers();
+    if (brokerClusterer) { try { brokerClusterer.setMap(null); } catch(e){} }
   }
 
   window.toggleBrokerLayer = function() {
@@ -5176,14 +5236,12 @@ kakao.maps.load(function() {
           brokerData = j;
           brokerLoading = false;
           setLoading('ready');
-          // SDK clusterer가 늦게 로드될 수 있으니 대기
           var t = 0;
           var iv = setInterval(function(){
             if (window.kakao && kakao.maps && kakao.maps.MarkerClusterer && window.map) {
               clearInterval(iv);
-              buildMarkers();
               showLayer();
-            } else if (++t > 80) { clearInterval(iv); console.warn('[broker] clusterer not ready'); }
+            } else if (++t > 80) { clearInterval(iv); console.warn('[broker] sdk not ready'); }
           }, 250);
         })
         .catch(function(e){
