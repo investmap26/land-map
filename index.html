@@ -3028,6 +3028,62 @@ function init() {
     });
     window.map = map; // 전역 접근용
 
+    // ★ v3 (2026-05-26): iframe 안에서 카카오맵 사이즈 측정 실패 → bounds NaN 빈 화면 강력 패치
+    //   - 진단: container 크기 정상(820x694), bounds=NaN, relayout()만으로 복구 안 됨
+    //   - 해결: 다단계 setCenter + relayout 강제 호출 → internal state 재계산
+    //   - ResizeObserver: iframe 사이즈 변경 자동 감지 + 재계산
+    (function() {
+        var INITIAL_CENTER = new kakao.maps.LatLng(36.0, 127.8);
+        var INITIAL_LEVEL = 12;
+        function forceRecalc(reason) {
+            try {
+                if (!window.map) return;
+                window.map.relayout();
+                window.map.setCenter(INITIAL_CENTER);
+                window.map.setLevel(INITIAL_LEVEL);
+                console.log('[v3 forceRecalc:' + reason + '] bounds=' + window.map.getBounds());
+            } catch(e) { console.warn('[v3] forceRecalc error', e); }
+        }
+        // 다단계 trigger — iframe load timing 다양함
+        setTimeout(function(){ forceRecalc('500ms'); }, 500);
+        setTimeout(function(){ forceRecalc('1500ms'); }, 1500);
+        setTimeout(function(){ forceRecalc('3000ms'); }, 3000);
+        setTimeout(function(){ forceRecalc('6000ms'); }, 6000);
+        // ResizeObserver — container 크기 변경 자동 감지
+        if (typeof ResizeObserver !== 'undefined') {
+            try {
+                var ro = new ResizeObserver(function(){
+                    if (window.map) {
+                        try {
+                            window.map.relayout();
+                            // bounds NaN이면 강제 재초기화
+                            var b = window.map.getBounds();
+                            if (!b || isNaN(b.getSouthWest().getLat())) {
+                                window.map.setCenter(INITIAL_CENTER);
+                                window.map.setLevel(INITIAL_LEVEL);
+                                console.log('[v3 ResizeObserver] NaN detected, force re-center');
+                            }
+                        } catch(e){}
+                    }
+                });
+                ro.observe(container);
+                window._v3_resize_observer = ro;
+            } catch(e) { console.warn('[v3] ResizeObserver failed', e); }
+        }
+        // window resize 백업
+        window.addEventListener('resize', function(){
+            if (window.map) {
+                try { window.map.relayout(); } catch(e){}
+            }
+        });
+        // 부모창에서 force_relayout 메시지 받으면 강제 재계산
+        window.addEventListener('message', function(ev){
+            if (ev.data && ev.data.type === 'force_relayout') {
+                forceRecalc('postMessage');
+            }
+        });
+    })();
+
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
