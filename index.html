@@ -4891,18 +4891,65 @@ window.toggleBookmarkPanel = toggleBookmarkPanel;
 
 
 kakao.maps.load(function() {
-            console.log('%c[버전] 20260113-v1 - 팝업 크기 축소 + 닫기버튼', 'color: red; font-size: 20px; font-weight: bold;');
-            init();
+            console.log('%c[버전] 20260526-v7 — postMessage size + delayed init', 'color: red; font-size: 20px; font-weight: bold;');
 
-            // 로드뷰 초기화 (원본 방식: 페이지 로드 시 한 번만)
-            initRoadview();
-            initSearchData();
-            loadFavorites();
-            loadBookmarks();
-            // 완전일치 데이터 자동 로드 (기본 체크됨 - 마커만 사용)
-            loadExactMatchData(function() {
-                markers.exact.forEach(function(m) { m.setMap(map); });
+            // ★ v7 (2026-05-26): 진짜 본질 해결 — 카카오맵 init 전 #map 사이즈 명시 px 설정
+            //   진단 결과: 카카오맵 SDK가 bounds=NaN 상태로 갇혀 타일 fetch 자체를 안 함
+            //   원인: iframe 안에서 100vh/100vw가 잘못 측정 (부모창 viewport와 헷갈림)
+            //   해결: 부모창에서 iframe 픽셀 사이즈를 postMessage로 전달 → #map에 px 명시 → 그 후 init
+            //   백업: 2.5초 안에 메시지 안 오면 fallback (단독 land-map 사용 케이스)
+
+            var _v7_initialized = false;
+            function _v7_doInit(sizeSource) {
+                if (_v7_initialized) return;
+                _v7_initialized = true;
+                console.log('[v7] init 시작 (size source: ' + sizeSource + ')');
+                init();
+                initRoadview();
+                initSearchData();
+                loadFavorites();
+                loadBookmarks();
+                loadExactMatchData(function() {
+                    markers.exact.forEach(function(m) { m.setMap(map); });
+                });
+            }
+            function _v7_applySize(w, h) {
+                var c = document.getElementById('map');
+                if (c && w > 0 && h > 0) {
+                    c.style.width = w + 'px';
+                    c.style.height = h + 'px';
+                    console.log('[v7] #map 사이즈 명시 설정: ' + w + 'x' + h);
+                }
+            }
+
+            // 부모창에서 사이즈 메시지 받기
+            window.addEventListener('message', function(ev) {
+                if (!ev.data || ev.data.type !== 'set_iframe_size') return;
+                var w = parseInt(ev.data.width) || 0;
+                var h = parseInt(ev.data.height) || 0;
+                _v7_applySize(w, h);
+                // 첫 사이즈 메시지 받으면 init 트리거 (50ms로 layout 적용 보장)
+                setTimeout(function(){ _v7_doInit('postMessage(' + w + 'x' + h + ')'); }, 50);
             });
+
+            // 부모창에 "준비 됐다 사이즈 보내달라" 알림
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({type: 'land-map-ready-for-size'}, '*');
+                    console.log('[v7] 부모창에 ready-for-size 알림 전송');
+                }
+            } catch(e) {}
+
+            // 백업: 2.5초 안에 메시지 안 오면 fallback (단독 land-map 사용)
+            setTimeout(function(){
+                if (!_v7_initialized) {
+                    var c = document.getElementById('map');
+                    var w = c ? c.offsetWidth : 0;
+                    var h = c ? c.offsetHeight : 0;
+                    if (w > 0 && h > 0) _v7_applySize(w, h);
+                    _v7_doInit('fallback timeout 2.5s (size: ' + w + 'x' + h + ')');
+                }
+            }, 2500);
         });
     };
     document.head.appendChild(s);
