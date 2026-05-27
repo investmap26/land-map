@@ -5011,15 +5011,27 @@ kakao.maps.load(function() {
       );
       var marker = new kakao.maps.Marker({ position: pos, image: img, map: window.map, zIndex: 100 });
       var phClean = (b['핸드폰']||'').replace(/[^0-9]/g, '');
+      var mobile = (b['핸드폰']||'').replace(/[^0-9\-]/g, '');
+      var office = (b['사무실']||'').replace(/[^0-9\-]/g, '');
       var smsBtnHtml = phClean
         ? '<a href="javascript:void(0)" onclick="window._sendSmsTo(\'' + phClean + '\')" style="display:inline-block;margin-top:5px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;text-decoration:none;">💬 사건 시세문의 문자</a>'
         : '';
+      var mobileHtml = b['핸드폰']
+        ? '<a href="tel:' + mobile + '" style="color:#059669;text-decoration:none;font-weight:600;">📱 ' + b['핸드폰'] + '</a>'
+        : '';
+      var officeHtml = b['사무실']
+        ? '<a href="tel:' + office + '" style="color:#1d4ed8;text-decoration:none;font-weight:600;">☎ ' + b['사무실'] + '</a>'
+        : '';
+      var sep = (b['핸드폰'] && b['사무실']) ? ' / ' : '';
+      var directSmsHtml = phClean
+        ? ' <a href="sms:' + phClean + '" style="display:inline-block;margin-left:6px;background:#f59e0b;color:#fff;padding:2px 8px;border-radius:4px;font-size:10px;text-decoration:none;">💬 문자</a>'
+        : '';
       var iw = new kakao.maps.InfoWindow({
         position: pos,
-        content: '<div style="padding:7px 10px;font-size:11px;min-width:200px;">' +
+        content: '<div style="padding:7px 10px;font-size:11px;min-width:200px;line-height:1.7;">' +
                  '<b style="color:' + color + ';">#' + (b['순위']||'') + ' ' + (b['상호']||'') + '</b><br>' +
                  '<span style="color:#666;">📍 ' + (b['주소']||'') + '</span><br>' +
-                 '<span>📱 ' + (b['핸드폰']||'') + ' / ☎ ' + (b['사무실']||'') + '</span><br>' +
+                 mobileHtml + sep + officeHtml + directSmsHtml + '<br>' +
                  '<span style="color:' + color + ';font-weight:600;">↔ ' + dist + 'm</span><br>' +
                  smsBtnHtml +
                  '</div>'
