@@ -5085,6 +5085,8 @@ kakao.maps.load(function() {
     brokerMarkers = [];
     if (targetMarker) { try { targetMarker.setMap(null); } catch(e){} targetMarker = null; }
   }
+  // ★ 2026-06-04: 공인중개사 레이어 OFF 시 이 '사건 시세문의' 마커도 함께 끄도록 외부 노출
+  window._clearCaseBrokers = clearBrokerMarkers;
   function ensureKakao(cb) {
     var tries = 0;
     var iv = setInterval(function(){
@@ -5158,6 +5160,9 @@ kakao.maps.load(function() {
       kakao.maps.event.addListener(marker, 'click', function(){ iw.open(window.map, marker); });
       brokerMarkers.push(marker);
     });
+    // ★ 2026-06-04: 사건 시세문의 중개사가 표시되면 공인중개사 토글도 ON 표시
+    //   → 토글을 끄면 이 마커들도 함께 사라짐("끌 때 끄고 켤 때 켜고")
+    if (brokerMarkers.length) { var _cb = document.getElementById('layer-broker'); if (_cb) _cb.checked = true; }
   }
   window.addEventListener('message', function(ev){
     var d = ev.data;
@@ -5364,6 +5369,8 @@ kakao.maps.load(function() {
     detachIdleListener();
     clearMarkers();
     if (brokerClusterer) { try { brokerClusterer.setMap(null); } catch(e){} }
+    // ★ 2026-06-04: 공인중개사 레이어 OFF → '사건 시세문의'(인근 중개사) 마커도 함께 제거 ("끄면 다 꺼짐")
+    if (window._clearCaseBrokers) { try { window._clearCaseBrokers(); } catch(e){} }
   }
 
   window.toggleBrokerLayer = function() {
