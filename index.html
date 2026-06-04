@@ -2545,14 +2545,15 @@ function loadExactMatchData(callback) {
                         window.currentExactOverlay.setMap(null);
                     }
                     var overlayId = 'exact-overlay-' + Date.now();
-                    var content = '<div style="position:relative;padding:10px;background:#1f2937;color:#fff;border-radius:8px;font-size:11px;max-width:220px;border:2px solid #10b981;box-shadow:0 4px 15px rgba(0,0,0,0.5)">' +
+                    window._currentPopupData = d;
+                    var content = '<div style="position:relative;padding:10px;background:#1f2937;color:#fff;border-radius:8px;font-size:11px;max-width:240px;border:2px solid #10b981;box-shadow:0 4px 15px rgba(0,0,0,0.5)">' +
                         '<button onclick="window.closeExactOverlay()" style="position:absolute;top:4px;right:6px;background:none;border:none;color:rgba(255,255,255,0.6);font-size:16px;cursor:pointer;padding:0;line-height:1">&times;</button>' +
                         '<div style="font-weight:700;color:#10b981;margin-bottom:8px;font-size:13px;border-bottom:1px solid #374151;padding-bottom:6px;padding-right:16px">✅ 완전일치 경공매</div>' +
                         '<div style="margin-bottom:8px;font-weight:600;font-size:11px;line-height:1.4">' + (d.address || '-') + '</div>' +
                         '<table style="width:100%;font-size:10px;color:#e5e7eb">' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + '</td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + ' <button onclick="_copyPopupCaseNo()" style="background:#2563eb;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;cursor:pointer;margin-left:4px;">📋 복사</button></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">구분</td><td style="padding:3px 0">' + (d.category || '-') + '</td></tr>' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px">' + (d.project || '-') + '</td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 사업명 검색+복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">🔍클릭</span></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">감정가</td><td style="padding:3px 0;color:#fbbf24;font-weight:700;font-size:11px">' + (d.appraisal ? Number(d.appraisal).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">최저가</td><td style="padding:3px 0;color:#ef4444;font-weight:700;font-size:11px">' + (d.min_price ? Number(d.min_price).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '</table></div>';
@@ -3428,6 +3429,34 @@ function toggleAllLayers() {
     console.log('[레이어] 전체', allLayersOn ? 'ON' : 'OFF');
 }
 
+// ★ 2026-06-04: 팝업 — 사건번호 복사 + 관련사업 검색/복사 (사장님 요청)
+function _mapToast(msg) {
+    var t = document.getElementById('_mapToast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = '_mapToast';
+        t.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:99;background:rgba(16,185,129,0.97);color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,0.45);max-width:90%;text-align:center;';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(window.__mapToastTimer);
+    window.__mapToastTimer = setTimeout(function(){ t.style.display = 'none'; }, 2600);
+}
+window._copyPopupCaseNo = function() {
+    var d = window._currentPopupData; if (!d) return;
+    var cn = d.case_no || '';
+    try { navigator.clipboard.writeText(cn).then(function(){ _mapToast('📋 사건번호 복사됨: ' + cn + '  (검색창/물건조회에 붙여넣기)'); }, function(){ _mapToast('사건번호: ' + cn); }); }
+    catch(e) { _mapToast('사건번호: ' + cn); }
+};
+window._searchPopupProject = function() {
+    var d = window._currentPopupData; if (!d || !d.project) return;
+    try { navigator.clipboard.writeText(d.project); } catch(e){}
+    var inp = document.getElementById('search-input');
+    if (inp) { inp.value = d.project; if (typeof performSearch === 'function') performSearch(); }
+    _mapToast('🔍 관련사업 검색 + 사업명 복사됨');
+};
+
 // ★ 2026-06-04: 인근거리 폴리곤 viewport 렌더링 — 전체(5천개+) 동시 렌더로 지도가 멈추던 문제 해결.
 //   현재 화면 범위 + 충분히 확대된 줌에서만 그림(최대 800개). 공인중개사 레이어와 동일 원리.
 var _cullIdleAdded = false;
@@ -3565,6 +3594,51 @@ function toggleLayer(category) {
         });
     }
 }
+
+// ★ 2026-06-04: 두 탭(경공매·토지보상)의 투자지도가 레이어 상태를 공유(연동) — localStorage 동기화.
+//   같은 /invest-map/ 지도지만 iframe 인스턴스가 달라 상태가 따로 놀던 것을, 한쪽에서 켜면 양쪽 다 켜지게.
+var _layerSyncApplying = false;
+function _saveLayerState() {
+    if (_layerSyncApplying) return;  // 동기화로 적용 중일 땐 저장 안 함(루프 방지)
+    try {
+        var st = {};
+        document.querySelectorAll('input[id^="layer-"]').forEach(function(cb){ st[cb.id] = cb.checked; });
+        localStorage.setItem('investMapLayerState', JSON.stringify(st));
+    } catch(e){}
+}
+function _applyLayerState(st) {
+    if (!st) return;
+    _layerSyncApplying = true;
+    try {
+        Object.keys(st).forEach(function(id){
+            var cb = document.getElementById(id);
+            if (cb && cb.checked !== st[id]) {
+                cb.checked = st[id];
+                if (id === 'layer-broker') { try { toggleBrokerLayer(); } catch(e){} }
+                else { try { toggleLayer(id.replace('layer-', '')); } catch(e){} }
+            }
+        });
+    } finally { _layerSyncApplying = false; }
+}
+function _initLayerSync() {
+    try {
+        var saved = JSON.parse(localStorage.getItem('investMapLayerState') || 'null');
+        if (saved) _applyLayerState(saved);
+    } catch(e){}
+    document.querySelectorAll('input[id^="layer-"]').forEach(function(cb){
+        cb.addEventListener('change', function(){ setTimeout(_saveLayerState, 50); });
+    });
+    window.addEventListener('storage', function(e){
+        if (e.key === 'investMapLayerState') {
+            try { _applyLayerState(JSON.parse(e.newValue || 'null')); } catch(err){}
+        }
+    });
+}
+// 지도+체크박스 준비되면 연동 시작
+(function _waitInitSync(){
+    if (window.map && document.getElementById('layer-exact')) { try { _initLayerSync(); } catch(e){} }
+    else { setTimeout(_waitInitSync, 500); }
+})();
 
 // 경매/공매 클러스터러 표시 (레이어 체크박스용 - 필터와 별개)
 function updateAuctionVisibility() {
