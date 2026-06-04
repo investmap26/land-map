@@ -2553,7 +2553,7 @@ function loadExactMatchData(callback) {
                         '<table style="width:100%;font-size:10px;color:#e5e7eb">' +
                         '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + ' <button onclick="_copyPopupCaseNo()" style="background:#2563eb;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;cursor:pointer;margin-left:4px;">📋 복사</button></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">구분</td><td style="padding:3px 0">' + (d.category || '-') + '</td></tr>' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 관련사업명 전체 복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">📋복사</span></td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 지도에 그 사업 필지 표시 + 원본 토지조서 열기(PC)">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">🔎사업보기</span></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">감정가</td><td style="padding:3px 0;color:#fbbf24;font-weight:700;font-size:11px">' + (d.appraisal ? Number(d.appraisal).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">최저가</td><td style="padding:3px 0;color:#ef4444;font-weight:700;font-size:11px">' + (d.min_price ? Number(d.min_price).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '</table></div>';
@@ -2619,7 +2619,7 @@ function loadNearby100Data(callback) {
                         '<div style="margin-bottom:8px;font-weight:600;font-size:11px;line-height:1.4">' + (d.address || '-') + '</div>' +
                         '<table style="width:100%;font-size:10px;color:#e5e7eb">' +
                         '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + ' <button onclick="_copyPopupCaseNo()" style="background:#2563eb;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;cursor:pointer;margin-left:4px;">📋 복사</button></td></tr>' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 관련사업명 전체 복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">📋복사</span></td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 지도에 그 사업 필지 표시 + 원본 토지조서 열기(PC)">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">🔎사업보기</span></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">거리</td><td style="padding:3px 0">' + (d.distance ? Math.round(d.distance) + 'm' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">감정가</td><td style="padding:3px 0;color:#D32F2F;font-weight:700;font-size:11px">' + (d.appraisal && d.appraisal !== 'nan' ? Number(d.appraisal).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">최저가</td><td style="padding:3px 0;color:#ef4444;font-weight:700;font-size:11px">' + (d.min_price && d.min_price !== 'nan' ? Number(d.min_price).toLocaleString() + '원' : '-') + '</td></tr>' +
@@ -2683,7 +2683,7 @@ function loadNearby500Data(callback) {
                         '<div style="margin-bottom:8px;font-weight:600;font-size:11px;line-height:1.4">' + (d.address || '-') + '</div>' +
                         '<table style="width:100%;font-size:10px;color:#e5e7eb">' +
                         '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + ' <button onclick="_copyPopupCaseNo()" style="background:#2563eb;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;cursor:pointer;margin-left:4px;">📋 복사</button></td></tr>' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 관련사업명 전체 복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">📋복사</span></td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 지도에 그 사업 필지 표시 + 원본 토지조서 열기(PC)">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">🔎사업보기</span></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">거리</td><td style="padding:3px 0">' + (d.distance ? Math.round(d.distance) + 'm' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">감정가</td><td style="padding:3px 0;color:#fbbf24;font-weight:700;font-size:11px">' + (d.appraisal && d.appraisal !== 'nan' ? Number(d.appraisal).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">최저가</td><td style="padding:3px 0;color:#ef4444;font-weight:700;font-size:11px">' + (d.min_price && d.min_price !== 'nan' ? Number(d.min_price).toLocaleString() + '원' : '-') + '</td></tr>' +
@@ -2747,7 +2747,7 @@ function loadNearby1kmData(callback) {
                         '<div style="margin-bottom:8px;font-weight:600;font-size:11px;line-height:1.4">' + (d.address || '-') + '</div>' +
                         '<table style="width:100%;font-size:10px;color:#e5e7eb">' +
                         '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + ' <button onclick="_copyPopupCaseNo()" style="background:#2563eb;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;cursor:pointer;margin-left:4px;">📋 복사</button></td></tr>' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 관련사업명 전체 복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">📋복사</span></td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 지도에 그 사업 필지 표시 + 원본 토지조서 열기(PC)">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">🔎사업보기</span></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">거리</td><td style="padding:3px 0">' + (d.distance ? Math.round(d.distance) + 'm' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">감정가</td><td style="padding:3px 0;color:#fb923c;font-weight:700;font-size:11px">' + (d.appraisal && d.appraisal !== 'nan' ? Number(d.appraisal).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">최저가</td><td style="padding:3px 0;color:#ef4444;font-weight:700;font-size:11px">' + (d.min_price && d.min_price !== 'nan' ? Number(d.min_price).toLocaleString() + '원' : '-') + '</td></tr>' +
@@ -3452,12 +3452,55 @@ window._copyPopupCaseNo = function() {
     try { navigator.clipboard.writeText(cn).then(function(){ _mapToast('📋 사건번호 복사됨: ' + cn + '  (검색창/물건조회에 붙여넣기)'); }, function(){ _mapToast('사건번호: ' + cn); }); }
     catch(e) { _mapToast('사건번호: ' + cn); }
 };
+// ★ 2026-06-04: 관련사업 클릭 → 같은 사업 필지를 지도에 강조 + 그 범위로 이동
+var _projHighlight = [];
+function _clearProjHighlight() {
+    _projHighlight.forEach(function(o){ try { o.setMap(null); } catch(e){} });
+    _projHighlight = [];
+}
+function _highlightProjectOnMap(project) {
+    _clearProjHighlight();
+    if (!project || !window.map) return 0;
+    var bounds = new kakao.maps.LatLngBounds();
+    var n = 0;
+    Object.keys(polygons).forEach(function(cat){
+        var arr = polygons[cat]; if (!arr) return;
+        arr.forEach(function(p){
+            var dd = p._data;
+            if (dd && dd.project === project) {
+                if (dd.polygon && dd.polygon.length >= 3) {
+                    var path = dd.polygon.map(function(c){ return new kakao.maps.LatLng(c[1], c[0]); });
+                    var hl = new kakao.maps.Polygon({ path: path, strokeWeight: 6, strokeColor: '#00e5ff', strokeOpacity: 1, fillColor: '#00e5ff', fillOpacity: 0.25, zIndex: 500 });
+                    hl.setMap(window.map);
+                    _projHighlight.push(hl);
+                }
+                if (dd.lat && dd.lng) bounds.extend(new kakao.maps.LatLng(dd.lat, dd.lng));
+                n++;
+            }
+        });
+    });
+    if (n > 0) { try { window.map.setBounds(bounds); } catch(e){} }
+    return n;
+}
 window._searchPopupProject = function() {
     var d = window._currentPopupData; if (!d || !d.project) return;
     var pj = d.project || '';
-    // 사장님 의도: 사건번호처럼 "복사해서 붙여넣기" — 사업명으로 검색(X, 결과없음)이 아니라 전체 사업명 복사+확인(O)
-    try { navigator.clipboard.writeText(pj).then(function(){ _mapToast('📋 관련사업 복사됨: ' + pj); }, function(){ _mapToast('관련사업: ' + pj); }); }
-    catch(e) { _mapToast('관련사업: ' + pj); }
+    // 1) 지도에 같은 사업 필지 강조 + 이동 (전부 작동)
+    var cnt = _highlightProjectOnMap(pj);
+    // 2) 원본 토지조서 파일 열기 (PC 로컬에서만)
+    var isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    if (isLocal) {
+        fetch('/api/open-project-file?project=' + encodeURIComponent(pj))
+            .then(function(r){ return r.json(); })
+            .then(function(res){
+                if (res && res.ok) _mapToast('📂 원본 파일 열림 + 지도에 사업 필지 ' + cnt + '곳 강조');
+                else if (res && res.reason === 'descriptive') _mapToast('📍 사업 필지 ' + cnt + '곳 강조 (개발예정지/인프라 — 원본문서 없음)');
+                else _mapToast('📍 사업 필지 ' + cnt + '곳 강조 (원본 파일 연결 없음)');
+            })
+            .catch(function(){ _mapToast('📍 사업 필지 ' + cnt + '곳 강조'); });
+    } else {
+        _mapToast('📍 사업 필지 ' + cnt + '곳 강조 (파일 열기는 PC에서)');
+    }
 };
 
 // ★ 2026-06-04: 인근거리 폴리곤 viewport 렌더링 — 전체(5천개+) 동시 렌더로 지도가 멈추던 문제 해결.
