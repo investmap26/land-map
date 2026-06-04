@@ -2553,7 +2553,7 @@ function loadExactMatchData(callback) {
                         '<table style="width:100%;font-size:10px;color:#e5e7eb">' +
                         '<tr><td style="padding:3px 0;color:#9ca3af;width:50px">사건번호</td><td style="padding:3px 0;font-weight:500">' + (d.case_no || '-') + ' <button onclick="_copyPopupCaseNo()" style="background:#2563eb;color:#fff;border:none;border-radius:4px;font-size:9px;font-weight:700;padding:2px 6px;cursor:pointer;margin-left:4px;">📋 복사</button></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">구분</td><td style="padding:3px 0">' + (d.category || '-') + '</td></tr>' +
-                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 사업명 검색+복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">🔍클릭</span></td></tr>' +
+                        '<tr><td style="padding:3px 0;color:#9ca3af">관련사업</td><td style="padding:3px 0;word-break:break-all;font-size:9px"><span onclick="_searchPopupProject()" style="cursor:pointer;color:#7dd3fc;text-decoration:underline;" title="클릭 → 관련사업명 전체 복사">' + (d.project || '-') + '</span> <span style="color:#7dd3fc;font-size:8px;white-space:nowrap;">📋복사</span></td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">감정가</td><td style="padding:3px 0;color:#fbbf24;font-weight:700;font-size:11px">' + (d.appraisal ? Number(d.appraisal).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '<tr><td style="padding:3px 0;color:#9ca3af">최저가</td><td style="padding:3px 0;color:#ef4444;font-weight:700;font-size:11px">' + (d.min_price ? Number(d.min_price).toLocaleString() + '원' : '-') + '</td></tr>' +
                         '</table></div>';
@@ -3451,10 +3451,10 @@ window._copyPopupCaseNo = function() {
 };
 window._searchPopupProject = function() {
     var d = window._currentPopupData; if (!d || !d.project) return;
-    try { navigator.clipboard.writeText(d.project); } catch(e){}
-    var inp = document.getElementById('search-input');
-    if (inp) { inp.value = d.project; if (typeof performSearch === 'function') performSearch(); }
-    _mapToast('🔍 관련사업 검색 + 사업명 복사됨');
+    var pj = d.project || '';
+    // 사장님 의도: 사건번호처럼 "복사해서 붙여넣기" — 사업명으로 검색(X, 결과없음)이 아니라 전체 사업명 복사+확인(O)
+    try { navigator.clipboard.writeText(pj).then(function(){ _mapToast('📋 관련사업 복사됨: ' + pj); }, function(){ _mapToast('관련사업: ' + pj); }); }
+    catch(e) { _mapToast('관련사업: ' + pj); }
 };
 
 // ★ 2026-06-04: 인근거리 폴리곤 viewport 렌더링 — 전체(5천개+) 동시 렌더로 지도가 멈추던 문제 해결.
