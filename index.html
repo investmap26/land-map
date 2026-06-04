@@ -3994,6 +3994,12 @@ function performSearch() {
         return;
     }
 
+    // ★ 첫 검색 시 경공매 데이터(약 11MB) 로딩 동안 빈 화면 방지 — 즉시 "검색 중" 표시
+    if (!auctionSearchCache) {
+        resultsDiv.innerHTML = '<div class="search-result-item"><div class="search-result-name">⏳ 검색 중...</div><div class="search-result-addr">경공매 DB 첫 로딩 중 — 공매부터 차례로 표시됩니다 (PC 첫 검색은 다소 걸려요)</div></div>';
+        resultsDiv.classList.add('active');
+    }
+
     // 1. 내부 데이터에서 검색
     var results = allSearchableItems.filter(function(item) {
         return (item.name && item.name.toLowerCase().includes(queryLower)) ||
@@ -4016,17 +4022,21 @@ function performSearch() {
         if (auctionSearchCache) {
             callback(filterAuction(auctionSearchCache));
         } else {
-            // 첫 검색 시 경매+공매 데이터 로드
-            Promise.all([
-                fetch("data_auction.json?v=" + auctionCacheVersion).then(function(r) { return r.json(); }),
-                fetch("data_public.json?v=" + auctionCacheVersion).then(function(r) { return r.json(); })
-            ]).then(function(results) {
-                // 경매와 공매 데이터 합치기
-                var auctionData = results[0].map(function(d) { d.auction_type = '경매'; return d; });
-                var publicData = results[1].map(function(d) { d.auction_type = '공매'; return d; });
-                auctionSearchCache = auctionData.concat(publicData);
-                callback(filterAuction(auctionSearchCache));
-            }).catch(function() { callback([]); });
+            // ★ 공매(2.7MB,빠름) 먼저 받아 즉시 표시 → 경매(8.5MB,느림)는 뒤에 합쳐 재표시
+            //   (PC 개발서버가 큰 파일을 느리게 서빙 → 공매 검색이 경매 로딩에 막히지 않게)
+            var _comb = [];
+            var _pubDone = false, _aucDone = false;
+            function _cacheIfReady() { if (_pubDone && _aucDone) auctionSearchCache = _comb; }
+            fetch("data_public.json?v=" + auctionCacheVersion).then(function(r) { return r.json(); }).then(function(pub) {
+                _comb = _comb.concat(pub.map(function(d) { d.auction_type = '공매'; return d; }));
+                _pubDone = true; _cacheIfReady();
+                callback(filterAuction(_comb));
+            }).catch(function() { _pubDone = true; _cacheIfReady(); });
+            fetch("data_auction.json?v=" + auctionCacheVersion).then(function(r) { return r.json(); }).then(function(auc) {
+                _comb = _comb.concat(auc.map(function(d) { d.auction_type = '경매'; return d; }));
+                _aucDone = true; _cacheIfReady();
+                callback(filterAuction(_comb));
+            }).catch(function() { _aucDone = true; _cacheIfReady(); });
         }
     }
 
