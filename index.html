@@ -3032,6 +3032,25 @@ function init() {
     });
     window.map = map; // 전역 접근용
 
+    // ★ 2026-06-04: 숨겨진 탭(크기 0)에서 init되면 빈 화면이 되는 문제 자가복구.
+    //   #map 크기가 생기면(=탭이 보이면) 자동 relayout → 토지보상 inlineMap 등 어디에 박혀도
+    //   경공매 지도와 동일하게 타일이 뜨게 함(진짜 통일). ResizeObserver = 표시 전환을 안정적으로 감지.
+    try {
+        if (window.ResizeObserver) {
+            var _mapResizeFixPrev = 0;
+            var _mapResizeFix = new ResizeObserver(function() {
+                var c = document.getElementById('map');
+                if (!window.map || !c) return;
+                var sz = (c.offsetWidth || 0) + 'x' + (c.offsetHeight || 0);
+                if (c.offsetWidth > 30 && c.offsetHeight > 30 && sz !== _mapResizeFixPrev) {
+                    _mapResizeFixPrev = sz;
+                    try { window.map.relayout(); } catch (e) {}
+                }
+            });
+            _mapResizeFix.observe(container);
+        }
+    } catch (e) {}
+
     // 지도 클릭 시 위치 저장 (빠른 줌용) + 검색 마커 제거
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
