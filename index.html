@@ -3055,6 +3055,9 @@ function init() {
     kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
         lastClickPosition = mouseEvent.latLng;
 
+        // ★ 2026-06-04: 지도 빈 곳 클릭 시 '관련사업 강조'(청록 네모) 해제 (안 지워지던 문제)
+        if (typeof _clearProjHighlight === 'function') _clearProjHighlight();
+
         // 도구 모드 체크 (거리/반경 측정)
         if (window.handleMeasureClick(mouseEvent.latLng)) {
             return;
@@ -3476,6 +3479,8 @@ var _projHighlight = [];
 function _clearProjHighlight() {
     _projHighlight.forEach(function(o){ try { o.setMap(null); } catch(e){} });
     _projHighlight = [];
+    var _pcb = document.getElementById('_projClearBtn');
+    if (_pcb) _pcb.style.display = 'none';
 }
 function _highlightProjectOnMap(project) {
     _clearProjHighlight();
@@ -3498,7 +3503,19 @@ function _highlightProjectOnMap(project) {
             }
         });
     });
-    if (n > 0) { try { window.map.setBounds(bounds); } catch(e){} }
+    if (n > 0) {
+        try { window.map.setBounds(bounds); } catch(e){}
+        var _pcb = document.getElementById('_projClearBtn');
+        if (!_pcb) {
+            _pcb = document.createElement('div');
+            _pcb.id = '_projClearBtn';
+            _pcb.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:100;background:#00b8d4;color:#fff;padding:7px 15px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,0.45);';
+            _pcb.onclick = function(){ _clearProjHighlight(); };
+            document.body.appendChild(_pcb);
+        }
+        _pcb.textContent = '✕ 사업 강조 해제 (' + n + '곳)';
+        _pcb.style.display = 'block';
+    }
     return n;
 }
 window._searchPopupProject = function() {
