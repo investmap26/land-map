@@ -3456,6 +3456,22 @@ function cullNearbyPolygons() {
             else { if (p.getMap()) p.setMap(null); }
         }
     }
+    // 줌아웃 상태에서 인근거리 켜져 있으면 "확대 안내" 표시 (왜 안 보이는지 + 어떻게 보는지)
+    var anyOn = false;
+    for (var k = 0; k < cats.length; k++) { var c2 = document.getElementById('layer-' + cats[k]); if (c2 && c2.checked) { anyOn = true; break; } }
+    var hint = document.getElementById('_cullHint');
+    if (!hint) {
+        hint = document.createElement('div');
+        hint.id = '_cullHint';
+        hint.style.cssText = 'position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:9;background:rgba(99,102,241,0.96);color:#fff;padding:7px 15px;border-radius:18px;font-size:12px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,0.45);pointer-events:none;white-space:nowrap;';
+        document.body.appendChild(hint);
+    }
+    if (anyOn && lvl > MAX_LEVEL) {
+        hint.textContent = '🔍 인근거리·공인중개사는 지도를 확대하면 표시됩니다 (전국뷰는 너무 많아 숨김)';
+        hint.style.display = 'block';
+    } else {
+        hint.style.display = 'none';
+    }
 }
 
 function toggleLayer(category) {
