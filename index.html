@@ -3428,6 +3428,36 @@ function toggleAllLayers() {
     console.log('[레이어] 전체', allLayersOn ? 'ON' : 'OFF');
 }
 
+// ★ 2026-06-04: 인근거리 폴리곤 viewport 렌더링 — 전체(5천개+) 동시 렌더로 지도가 멈추던 문제 해결.
+//   현재 화면 범위 + 충분히 확대된 줌에서만 그림(최대 800개). 공인중개사 레이어와 동일 원리.
+var _cullIdleAdded = false;
+function cullNearbyPolygons() {
+    if (!window.map) return;
+    if (!_cullIdleAdded) {
+        kakao.maps.event.addListener(map, 'idle', cullNearbyPolygons);
+        _cullIdleAdded = true;
+    }
+    var lvl = map.getLevel();
+    var bounds = map.getBounds();
+    var MAX_LEVEL = 8;     // 이보다 줌아웃(전국뷰)이면 폴리곤 숨김 (너무 많고 안 보임)
+    var MAX_VISIBLE = 800; // 화면 안이라도 최대 800개만 렌더
+    var cats = ['nearby100', 'nearby500', 'nearby1km'];
+    for (var c = 0; c < cats.length; c++) {
+        var arr = polygons[cats[c]];
+        if (!arr || !arr.length) continue;
+        var cb = document.getElementById('layer-' + cats[c]);
+        var on = cb && cb.checked;
+        var shown = 0;
+        for (var i = 0; i < arr.length; i++) {
+            var p = arr[i], d = p._data;
+            var want = on && lvl <= MAX_LEVEL && shown < MAX_VISIBLE &&
+                       d && bounds.contain(new kakao.maps.LatLng(d.lat, d.lng));
+            if (want) { shown++; if (!p.getMap()) p.setMap(map); }
+            else { if (p.getMap()) p.setMap(null); }
+        }
+    }
+}
+
 function toggleLayer(category) {
     var chk = document.getElementById('layer-' + category);
     var show = chk.checked;
@@ -3456,25 +3486,17 @@ function toggleLayer(category) {
         });
         return;
     }
-    // 100m 이내 lazy loading
+    // 100m/500m/1km 이내 lazy loading — 로드 후 viewport 컬링으로 화면범위만 렌더
     if (category === 'nearby100' && show && !nearby100Loaded) {
-        loadNearby100Data(function() {
-            polygons.nearby100.forEach(function(p) { p.setMap(map); });
-        });
+        loadNearby100Data(function() { cullNearbyPolygons(); });
         return;
     }
-    // 500m 이내 lazy loading
     if (category === 'nearby500' && show && !nearby500Loaded) {
-        loadNearby500Data(function() {
-            polygons.nearby500.forEach(function(p) { p.setMap(map); });
-        });
+        loadNearby500Data(function() { cullNearbyPolygons(); });
         return;
     }
-    // 1km 이내 lazy loading
     if (category === 'nearby1km' && show && !nearby1kmLoaded) {
-        loadNearby1kmData(function() {
-            polygons.nearby1km.forEach(function(p) { p.setMap(map); });
-        });
+        loadNearby1kmData(function() { cullNearbyPolygons(); });
         return;
     }
     // 경매 lazy loading (줌 레벨 9 이하에서만 표시)
@@ -3511,16 +3533,10 @@ function toggleLayer(category) {
         markers.exact.forEach(function(m) { m.setMap(show ? map : null); });
         return;
     }
-    if (category === 'nearby100' && nearby100Loaded) {
-        polygons.nearby100.forEach(function(p) { p.setMap(show ? map : null); });
-        return;
-    }
-    if (category === 'nearby500' && nearby500Loaded) {
-        polygons.nearby500.forEach(function(p) { p.setMap(show ? map : null); });
-        return;
-    }
-    if (category === 'nearby1km' && nearby1kmLoaded) {
-        polygons.nearby1km.forEach(function(p) { p.setMap(show ? map : null); });
+    if ((category === 'nearby100' && nearby100Loaded) ||
+        (category === 'nearby500' && nearby500Loaded) ||
+        (category === 'nearby1km' && nearby1kmLoaded)) {
+        cullNearbyPolygons();
         return;
     }
 
