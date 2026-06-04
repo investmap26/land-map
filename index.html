@@ -3131,7 +3131,7 @@ function init() {
     // 철도
     DATA_rail.forEach(function(d) {
         var m = createMarker(d.lat, d.lng, COLORS.railway, 'rail');
-        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif"><div style="font-weight:600;font-size:14px;margin-bottom:4px">' + (d.station || d.name) + '</div><div style="color:rgba(255,255,255,0.5);font-size:12px">' + (d.address || d.line || '철도예정지') + '</div><button onclick="addToFavorites(\'' + (d.station || d.name).replace(/'/g, "\\'") + '\',\'' + (d.address || '').replace(/'/g, "\\'") + '\',' + d.lat + ',' + d.lng + ',\'철도\')" style="margin-top:8px;padding:6px 12px;background:#6366f1;border:none;border-radius:6px;color:#fff;font-size:11px;cursor:pointer">⭐ 관심추가</button></div>';
+        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif"><div style="font-weight:600;font-size:14px;margin-bottom:4px"><span onclick="window._openLayerProject(\'' + ((d.station||d.name)||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" style="cursor:pointer;color:#7dd3fc;text-decoration:underline">' + (d.station || d.name) + '</span> 🔎</div><div style="color:rgba(255,255,255,0.5);font-size:12px">' + (d.address || d.line || '철도예정지') + '</div><button onclick="addToFavorites(\'' + (d.station || d.name).replace(/'/g, "\\'") + '\',\'' + (d.address || '').replace(/'/g, "\\'") + '\',' + d.lat + ',' + d.lng + ',\'철도\')" style="margin-top:8px;padding:6px 12px;background:#6366f1;border:none;border-radius:6px;color:#fff;font-size:11px;cursor:pointer">⭐ 관심추가</button></div>';
         addClickEvent(m, info);
         markers.railway.push(m);
     });
@@ -3139,7 +3139,7 @@ function init() {
     // 고속도로IC
     DATA_highway.forEach(function(d) {
         var m = createMarker(d.lat, d.lng, COLORS.highway, 'highway');
-        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif"><div style="font-weight:600;font-size:14px">' + d.name + '</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px">' + (d.address || '고속도로착공') + '</div></div>';
+        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif"><div style="font-weight:600;font-size:14px"><span onclick="window._openLayerProject(\'' + (d.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" style="cursor:pointer;color:#7dd3fc;text-decoration:underline">' + d.name + '</span> 🔎</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px">' + (d.address || '고속도로착공') + '</div></div>';
         addClickEvent(m, info);
         markers.highway.push(m);
     });
@@ -3147,7 +3147,7 @@ function init() {
     // IC진출입로
     DATA_ic.forEach(function(d) {
         var m = createMarker(d.lat, d.lng, '#ec4899', 'ic');
-        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif"><div style="font-weight:600;font-size:14px">' + d.name + '</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px">' + (d.address || 'IC진출입로') + '</div></div>';
+        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif"><div style="font-weight:600;font-size:14px"><span onclick="window._openLayerProject(\'' + (d.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" style="cursor:pointer;color:#7dd3fc;text-decoration:underline">' + d.name + '</span> 🔎</div><div style="color:rgba(255,255,255,0.5);font-size:12px;margin-top:4px">' + (d.address || 'IC진출입로') + '</div></div>';
         addClickEvent(m, info);
         markers.ic.push(m);
     });
@@ -3165,7 +3165,7 @@ function init() {
             return;
         }
         var m = createMarker(lat, lng, COLORS.development, 'dev');
-        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif;max-width:280px"><div style="font-weight:600;font-size:13px">' + d.name + '</div><div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:6px">' + (d.address || '개발예정지') + '</div></div>';
+        var info = '<div style="padding:14px 18px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.1);font-family:Pretendard,sans-serif;max-width:280px"><div style="font-weight:600;font-size:13px"><span onclick="window._openLayerProject(\'' + (d.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" style="cursor:pointer;color:#7dd3fc;text-decoration:underline">' + d.name + '</span> 🔎</div><div style="color:rgba(255,255,255,0.5);font-size:11px;margin-top:6px">' + (d.address || '개발예정지') + '</div></div>';
         addClickEvent(m, info);
         markers.development.push(m);
     });
@@ -3207,7 +3207,7 @@ function init() {
                 kakao.maps.event.addListener(poly, 'click', function(mouseEvent) {
                     // 팝업 HTML
                     var contentHtml = '<div style="padding:16px 20px;font-size:13px;max-width:320px;background:#1a1a1f;color:#fff;border-radius:10px;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 12px rgba(0,0,0,0.5)">' +
-                        '<div style="font-weight:600;font-size:14px;margin-bottom:12px;color:#f97316;line-height:1.4">' + name + '</div>' +
+                        '<div style="font-weight:600;font-size:14px;margin-bottom:12px;color:#f97316;line-height:1.4"><span onclick="window._openLayerProject(\'' + (name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'") + '\')" style="cursor:pointer;text-decoration:underline">' + name + '</span> <span style="font-size:10px;color:#7dd3fc">🔎 원본문서</span></div>' +
                         '<div style="display:flex;flex-direction:column;gap:8px">' +
                         '<div style="display:flex;align-items:center;gap:8px;color:#cbd5e1">' +
                         '<span style="width:20px;text-align:center">📍</span>' +
@@ -3473,6 +3473,22 @@ window._copyPopupCaseNo = function() {
     var cn = d.case_no || '';
     try { navigator.clipboard.writeText(cn).then(function(){ _mapToast('📋 사건번호 복사됨: ' + cn + '  (검색창/물건조회에 붙여넣기)'); }, function(){ _mapToast('사건번호: ' + cn); }); }
     catch(e) { _mapToast('사건번호: ' + cn); }
+};
+// ★ 2026-06-04: 토지목록/인프라 팝업의 '사업' 클릭 → 원본 공고문서 열기(PC) + 식별 토스트
+window._openLayerProject = function(name) {
+    if (!name) return;
+    var isLocal = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    if (isLocal) {
+        fetch('/api/open-project-file?project=' + encodeURIComponent(name))
+            .then(function(r){ return r.json(); })
+            .then(function(res){
+                if (res && res.ok) _mapToast('📂 사업 원본문서 열림');
+                else _mapToast('📋 ' + name + ' (원본문서 자동연결 없음)');
+            })
+            .catch(function(){ _mapToast('📋 ' + name); });
+    } else {
+        _mapToast('📋 ' + name + ' (문서 열기는 PC에서)');
+    }
 };
 // ★ 2026-06-04: 관련사업 클릭 → 같은 사업 필지를 지도에 강조 + 그 범위로 이동
 var _projHighlight = [];
