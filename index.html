@@ -3185,6 +3185,9 @@ function init() {
 
             DATA_proj.forEach(function(d) {
                 if (!d.path || d.path.length < 3) return;
+                // ★ 2026-06-05: 토지목록 정리 — 인프라/계획 항목(철도·지하철·고속도로·IC·개발예정지)은
+                //   별도 레이어(철도예정지·고속도로IC·개발예정지 등)에 있으므로 토지목록(보상공고)에선 제외
+                if (/^(지하철역|철도예정지|고속도로|개발예정지|IC진출입|철도|지하철)/.test(d.name || '')) return;
                 var path = d.path.map(function(c) { return new kakao.maps.LatLng(c[0], c[1]); });
                 var poly = new kakao.maps.Polygon({
                     path: path,
